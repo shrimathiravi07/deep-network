@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water-Guard AI | Live Encroachment Detection</title>
+    <title>Water-Guard AI | Smart Water Body Protection System</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -17,8 +17,301 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <div class="app-container">
+<body class="landing-mode">
+    <!-- LANDING PAGE -->
+    <div class="landing-page">
+        <!-- Navigation Header -->
+        <header class="landing-header">
+            <div class="header-container">
+                <div class="logo-brand">
+                    <div class="icon-ring-small">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                    <h1>Water-Guard AI</h1>
+                </div>
+                <nav class="header-nav">
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#stats" class="nav-link">Statistics</a>
+                    <a href="#login" class="nav-link login-btn">Login / Register</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h2 class="hero-title">Smart Water Body Protection System</h2>
+                    <p class="hero-subtitle">Protecting Our Water Bodies, One Encroachment at a Time</p>
+                    
+                    <div class="problem-statement">
+                        <p><strong>The Challenge:</strong> Illegal encroachments threaten our lakes and rivers. Water bodies face increasing pressure from unauthorized construction, dumping, and land grabbing. Our mission is to detect and prevent these encroachments in real-time using advanced AI and satellite imagery.</p>
+                    </div>
+
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="window.location.href='citizen.html'">
+                            <i class="fa-solid fa-flag"></i> Report Encroachment
+                        </button>
+                        <button class="btn btn-secondary" onclick="navigateToMap()">
+                            <i class="fa-solid fa-map"></i> View Water Bodies
+                        </button>
+                        <button class="btn btn-outline" onclick="window.location.href='login.html'">
+                            <i class="fa-solid fa-user"></i> Login / Register
+                        </button>
+                    </div>
+                </div>
+
+                <div class="hero-image">
+                    <div class="river-illustration">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Map Preview Section -->
+        <section class="map-preview-section">
+            <div class="section-header">
+                <h3>Map Preview: Nearby Water Bodies</h3>
+                <p>Real-time monitoring of protected water bodies in your region</p>
+            </div>
+            <div id="landing-map" class="landing-map"></div>
+            <div class="map-legend">
+                <div class="legend-item">
+                    <span class="legend-dot" style="background-color: #3b82f6;"></span>
+                    <p>Protected Water Bodies</p>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background-color: #ef4444;"></span>
+                    <p>Encroachment Detected</p>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background-color: #10b981;"></span>
+                    <p>Resolved Cases</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section id="stats" class="stats-section">
+            <div class="section-header">
+                <h3>Our Impact</h3>
+                <p>Real numbers, Real change</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card glass-panel">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-water"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="stat-water-bodies">1,245</div>
+                        <div class="stat-label">Total Water Bodies Monitored</div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-panel">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-flag"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="stat-complaints">8,392</div>
+                        <div class="stat-label">Complaints Registered</div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-panel">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="stat-resolved">3,156</div>
+                        <div class="stat-label">Encroachments Resolved</div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-panel">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="stat-citizens">45,230</div>
+                        <div class="stat-label">Active Citizens</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features-section">
+            <div class="section-header">
+                <h3>Platform Features</h3>
+                <p>Cutting-edge technology for water protection</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-satellite"></i>
+                    </div>
+                    <h4>Satellite Detection</h4>
+                    <p>Real-time AI-powered detection of encroachments using satellite imagery and computer vision.</p>
+                </div>
+
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <h4>Citizen Reports</h4>
+                    <p>Empower citizens to report unauthorized activities and encroachments with photo evidence.</p>
+                </div>
+
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h4>Analytics Dashboard</h4>
+                    <p>Track trends, monitor progress, and analyze encroachment patterns with detailed reports.</p>
+                </div>
+
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-map"></i>
+                    </div>
+                    <h4>Interactive Maps</h4>
+                    <p>Visualize protected water bodies and encroachment hotspots on interactive maps.</p>
+                </div>
+
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <h4>Real-time Alerts</h4>
+                    <p>Instant notifications for detected encroachments and critical water body events.</p>
+                </div>
+
+                <div class="feature-card glass-panel">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-shield"></i>
+                    </div>
+                    <h4>Secure Authentication</h4>
+                    <p>Role-based access control for citizens, officers, and administrators.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Awareness Section -->
+        <section id="about" class="awareness-section">
+            <div class="section-header">
+                <h3>Why Water Protection Matters</h3>
+                <p>Understanding the importance of preserving our water bodies</p>
+            </div>
+
+            <div class="awareness-grid">
+                <div class="awareness-card glass-panel">
+                    <div class="awareness-icon">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <h4>Freshwater Availability</h4>
+                    <p>Lakes and rivers provide over 90% of freshwater used by humans. Protecting them ensures clean water for future generations.</p>
+                </div>
+
+                <div class="awareness-card glass-panel">
+                    <div class="awareness-icon">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <h4>Ecosystem Health</h4>
+                    <p>Water bodies are home to diverse ecosystems. Encroachments destroy habitats and threaten biodiversity.</p>
+                </div>
+
+                <div class="awareness-card glass-panel">
+                    <div class="awareness-icon">
+                        <i class="fa-solid fa-tree"></i>
+                    </div>
+                    <h4>Climate Regulation</h4>
+                    <p>Rivers, lakes, and wetlands play a crucial role in regulating local climate and maintaining hydrological balance.</p>
+                </div>
+
+                <div class="awareness-card glass-panel">
+                    <div class="awareness-icon">
+                        <i class="fa-solid fa-people-group"></i>
+                    </div>
+                    <h4>Community Livelihood</h4>
+                    <p>Fisheries, agriculture, and tourism depend on healthy water bodies. Encroachments threaten livelihoods.</p>
+                </div>
+
+                <div class="awareness-card glass-panel">
+                    <div class="awareness-icon">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                    </div>
+                    <h4>Flood Prevention</h4>
+                    <p>Natural water bodies and floodplains reduce flood risk. Encroachments increase vulnerability to disasters.</p>
+                </div>
+
+                <div class="awareness-card glass-panel">
+                    <div class="awareness-icon">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <h4>Collective Responsibility</h4>
+                    <p>Every citizen has a role to play. Together, we can protect our water bodies for current and future generations.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action Section -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <h3>Join the Water Protection Movement</h3>
+                <p>Be part of the solution. Report encroachments, monitor water bodies, and help protect our natural resources.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary" onclick="window.location.href='citizen.html'">
+                        <i class="fa-solid fa-flag"></i> Report Now
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='login.html'">
+                        <i class="fa-solid fa-user"></i> Sign In
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h5>Water-Guard AI</h5>
+                    <p>Smart Water Body Protection System</p>
+                </div>
+                <div class="footer-section">
+                    <h5>Quick Links</h5>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#stats">Statistics</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>Contact</h5>
+                    <p>Email: info@waterguard.ai</p>
+                    <p>Phone: +91-XXX-XXXX-XXXX</p>
+                </div>
+                <div class="footer-section">
+                    <h5>Follow Us</h5>
+                    <div class="social-links">
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Water-Guard AI. All rights reserved. | Protecting Water Bodies for Future Generations</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Hidden App Container for Dashboard (kept for future use) -->
+    <div class="app-container" style="display: none;">
         
         <!-- Sidebar Panel -->
         <aside class="glass-panel sidebar">

@@ -3,84 +3,547 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water-Guard AI | Citizen Portal</title>
+    <title>Water-Guard AI | Citizen Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .tabs { display: flex; gap: 10px; margin-bottom: 2rem; }
-        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--panel-border); background: rgba(255,255,255,0.05); color: var(--text-secondary); cursor: pointer; transition: all 0.3s ease; }
-        .tab-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
-        textarea { width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--panel-border); border-radius: 8px; color: var(--text-primary); outline: none; resize: vertical; min-height: 80px; }
-        textarea:focus { border-color: var(--accent-blue); }
-        .complaint-list { display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; }
-        .complaint-card { padding: 1rem; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--panel-border); position: relative; }
-        .status-badge { position: absolute; top: 1rem; right: 1rem; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-        .status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .status-investigating { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-        .status-resolved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        /* Dashboard Tab Navigation */
+        .dashboard-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px;
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-tab-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .dashboard-tab-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .dashboard-tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Tab Content */
+        .dashboard-tab-content {
+            display: none;
+        }
+
+        .dashboard-tab-content.active {
+            display: block;
+        }
+
+        /* Form Styles */
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            outline: none;
+            resize: vertical;
+            min-height: 100px;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.05);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Complaint List */
+        .complaints-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .complaint-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .complaint-card:hover {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: var(--accent-blue);
+            transform: translateX(4px);
+        }
+
+        .complaint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .complaint-location {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .status-in-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .status-resolved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .complaint-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .complaint-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 0.75rem;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-mini {
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-mini-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-mini-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Alerts Section */
+        .alerts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            padding: 1.2rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-item.success {
+            border-left-color: var(--accent-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .alert-item.danger {
+            border-left-color: var(--accent-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-message {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Water Bodies Section */
+        .water-bodies-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .water-body-card {
+            padding: 1.2rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .water-body-card:hover {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--accent-success);
+            transform: translateX(4px);
+        }
+
+        .water-body-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .water-body-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        /* Map Selection Modal */
+        .location-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(3px);
+        }
+
+        .location-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .location-modal-content {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        #location-picker-map {
+            flex: 1;
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* Success Message */
+        .success-notification {
+            display: none;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            color: #6ee7b7;
+            margin-bottom: 1.5rem;
+            animation: slideDown 0.3s ease;
+        }
+
+        .success-notification.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar Styling */
+        .complaints-grid::-webkit-scrollbar,
+        .water-bodies-list::-webkit-scrollbar,
+        .alerts-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .complaints-grid::-webkit-scrollbar-track,
+        .water-bodies-list::-webkit-scrollbar-track,
+        .alerts-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .complaints-grid::-webkit-scrollbar-thumb,
+        .water-bodies-list::-webkit-scrollbar-thumb,
+        .alerts-container::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+        }
+
+        .complaints-grid::-webkit-scrollbar-thumb:hover,
+        .water-bodies-list::-webkit-scrollbar-thumb:hover,
+        .alerts-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.5);
+        }
     </style>
 </head>
-<body>
+<body class="dashboard-mode">
     <div class="app-container">
-        <aside class="glass-panel sidebar" style="width: 420px; overflow-y: auto;">
+        <!-- Sidebar -->
+        <aside class="glass-panel sidebar" style="width: 440px; overflow-y: auto;">
+            <!-- Header -->
             <div class="logo-section">
-                <div class="icon-ring"><i class="fa-solid fa-users"></i></div>
+                <div class="icon-ring" style="background: linear-gradient(135deg, var(--accent-success), #10b981);">
+                    <i class="fa-solid fa-person"></i>
+                </div>
                 <div>
-                    <h1>Citizen Portal</h1>
+                    <h1>Citizen Dashboard</h1>
                     <span class="subtitle">Welcome, <span id="username-display">User</span></span>
                 </div>
             </div>
 
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('report')" id="btn-report">Report Encroachment</button>
-                <button class="tab-btn" onclick="switchTab('track')" id="btn-track">Track Status</button>
+            <!-- Dashboard Navigation Tabs -->
+            <div class="dashboard-tabs">
+                <button class="dashboard-tab-btn active" onclick="switchDashboardTab('report')">
+                    <i class="fa-solid fa-flag"></i> Report
+                </button>
+                <button class="dashboard-tab-btn" onclick="switchDashboardTab('my-complaints')">
+                    <i class="fa-solid fa-list-check"></i> My Complaints
+                </button>
+                <button class="dashboard-tab-btn" onclick="switchDashboardTab('water-bodies')">
+                    <i class="fa-solid fa-water"></i> Water Bodies
+                </button>
+                <button class="dashboard-tab-btn" onclick="switchDashboardTab('alerts')">
+                    <i class="fa-solid fa-bell"></i> Alerts
+                </button>
             </div>
 
-            <!-- Report Tab -->
-            <div id="tab-report">
+            <!-- TAB 1: REPORT ENCROACHMENT -->
+            <div class="dashboard-tab-content active" id="tab-report">
+                <div class="success-notification" id="successNotification">
+                    <i class="fa-solid fa-check-circle"></i> Complaint submitted successfully!
+                </div>
+
                 <div class="control-group">
-                    <label for="location"><i class="fa-solid fa-map-pin"></i> Location Name / Coordinates</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="location" placeholder="e.g. Ousteri Lake South" autocomplete="off">
+                    <label for="reportLocation">
+                        <i class="fa-solid fa-map-pin"></i> Select Location
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                        <input 
+                            type="text" 
+                            id="reportLocation" 
+                            placeholder="Click map button or enter location" 
+                            style="flex: 1; padding: 12px 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--panel-border); border-radius: 8px; color: var(--text-primary);"
+                            readonly
+                        >
+                        <button onclick="openLocationModal()" style="padding: 12px 14px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            <i class="fa-solid fa-map"></i>
+                        </button>
                     </div>
+                    <small style="color: var(--text-secondary); margin-top: 4px; display: block;">
+                        <i class="fa-solid fa-info-circle"></i> Auto-detects water body from coordinates
+                    </small>
                 </div>
 
                 <div class="control-group">
-                    <label for="description"><i class="fa-solid fa-align-left"></i> Description</label>
-                    <textarea id="description" placeholder="Describe the suspected encroachment..."></textarea>
+                    <label for="reportDescription">
+                        <i class="fa-solid fa-align-left"></i> Description
+                    </label>
+                    <textarea 
+                        id="reportDescription" 
+                        placeholder="Describe the encroachment in detail (construction, dumping, land grabbing, etc.)..."
+                    ></textarea>
                 </div>
 
                 <div class="control-group">
-                    <label for="imageUpload"><i class="fa-solid fa-camera"></i> Photo / Satellite Evidence</label>
+                    <label for="reportImage">
+                        <i class="fa-solid fa-camera"></i> Evidence Photo
+                    </label>
                     <div class="file-upload-wrapper">
-                        <input type="file" id="imageUpload" accept="image/*">
+                        <input type="file" id="reportImage" accept="image/*">
                         <div class="file-upload-ui">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Click to browse</span>
+                            <span>Click to upload image</span>
                         </div>
                     </div>
                 </div>
 
-                <button class="primary-btn" id="submitBtn" onclick="submitComplaint()">
-                    <i class="fa-regular fa-paper-plane"></i> Submit to Authorities
+                <button class="primary-btn" id="submitReportBtn" onclick="submitComplaint()">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Report
                 </button>
-                
-                <div id="result-container" class="result-card hidden">
+
+                <div id="result-container" class="result-card hidden" style="margin-top: 1.5rem;">
                     <div class="loader hidden" id="loading-spinner"></div>
                     <div id="result-content"></div>
                 </div>
             </div>
 
-            <!-- Track Tab -->
-            <div id="tab-track" style="display: none;">
-                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-list-check"></i> My Complaints</h3>
-                <div class="complaint-list" id="complaintsList"></div>
+            <!-- TAB 2: MY COMPLAINTS -->
+            <div class="dashboard-tab-content" id="tab-my-complaints">
+                <div class="stats-overview" style="margin-bottom: 1.5rem;">
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="stat-total">0</div>
+                        <div class="stat-mini-label">Total</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="stat-pending">0</div>
+                        <div class="stat-mini-label">Pending</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="stat-in-progress">0</div>
+                        <div class="stat-mini-label">In Progress</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-value" id="stat-resolved">0</div>
+                        <div class="stat-mini-label">Resolved</div>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    <i class="fa-solid fa-history"></i> Complaint History
+                </h4>
+                <div class="complaints-grid" id="complaintsList">
+                    <div style="text-align: center; color: var(--text-secondary);">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Loading complaints...
+                    </div>
+                </div>
             </div>
 
-            <div class="credits" style="margin-top: 2rem;">
-                <a href="#" onclick="logout()" style="color: var(--accent-danger); text-decoration: none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <!-- TAB 3: NEARBY WATER BODIES -->
+            <div class="dashboard-tab-content" id="tab-water-bodies">
+                <h4 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    <i class="fa-solid fa-map-location-dot"></i> Water Bodies in Your Region
+                </h4>
+                <div class="water-bodies-list" id="waterBodiesList">
+                    <div style="text-align: center; color: var(--text-secondary);">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Loading water bodies...
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: ALERTS & NOTIFICATIONS -->
+            <div class="dashboard-tab-content" id="tab-alerts">
+                <h4 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 0.95rem;">
+                    <i class="fa-solid fa-bell"></i> Your Alerts
+                </h4>
+                <div class="alerts-container" id="alertsList"></div>
+            </div>
+
+            <!-- Logout Button -->
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <a href="#" onclick="logout()" style="display: flex; align-items: center; gap: 8px; color: var(--accent-danger); text-decoration: none; font-weight: 500; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
             </div>
         </aside>
 
@@ -89,46 +552,144 @@
             <div id="map"></div>
             <div class="map-overlay glass-panel">
                 <div class="stat-box">
-                    <span class="stat-value">Citizen AI</span>
-                    <span class="stat-label">Module Active</span>
+                    <span class="stat-value">
+                        <i class="fa-solid fa-location-crosshairs"></i> 
+                        <span id="current-location">Tracking...</span>
+                    </span>
+                    <span class="stat-label">Current Location</span>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Location Picker Modal -->
+    <div class="location-modal" id="locationModal">
+        <div class="location-modal-content">
+            <div class="modal-header">
+                <h3>Select Report Location</h3>
+                <button class="modal-close-btn" onclick="closeLocationModal()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div id="location-picker-map"></div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // Check Auth
+        // Authentication Check
         const userId = localStorage.getItem('user_id');
-        if (!userId) { window.location.href = 'login.html'; }
-        document.getElementById('username-display').textContent = localStorage.getItem('username');
-
-        function logout() {
-            localStorage.clear();
+        const userRole = localStorage.getItem('role');
+        
+        if (!userId || userRole !== 'citizen') {
             window.location.href = 'login.html';
         }
 
-        function switchTab(tab) {
-            document.getElementById('tab-report').style.display = tab === 'report' ? 'block' : 'none';
-            document.getElementById('tab-track').style.display = tab === 'track' ? 'block' : 'none';
-            document.getElementById('btn-report').classList.toggle('active', tab === 'report');
-            document.getElementById('btn-track').classList.toggle('active', tab === 'track');
+        document.getElementById('username-display').textContent = localStorage.getItem('username');
+
+        // Map Initialization
+        const mainMap = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
+        L.control.zoom({ position: 'bottomright' }).addTo(mainMap);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(mainMap);
+
+        let selectedLocation = null;
+        let selectedCoordinates = null;
+
+        // Sample Water Bodies Database
+        const waterBodiesData = [
+            { name: 'Chembarambakkam Lake', lat: 12.9716, lng: 79.8865, area: '2.5 km²', status: 'Protected' },
+            { name: 'Puzhal Lake', lat: 13.1788, lng: 80.0814, area: '1.8 km²', status: 'Protected' },
+            { name: 'Cooum River', lat: 13.0827, lng: 80.2707, area: '6.2 km', status: 'Monitored' },
+            { name: 'Kosasthalaiyar River', lat: 13.2162, lng: 80.1238, area: '4.5 km', status: 'Protected' },
+            { name: 'Buckingham Canal', lat: 13.1234, lng: 80.1856, area: '8.1 km', status: 'Protected' }
+        ];
+
+        // Dashboard Tab Switching
+        function switchDashboardTab(tab) {
+            document.querySelectorAll('.dashboard-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.dashboard-tab-btn').forEach(el => el.classList.remove('active'));
             
-            if (tab === 'track') loadComplaints();
+            document.getElementById('tab-' + (tab === 'report' ? 'report' : 
+                                             tab === 'my-complaints' ? 'my-complaints' :
+                                             tab === 'water-bodies' ? 'water-bodies' : 'alerts')).classList.add('active');
+            
+            document.querySelector(`[onclick="switchDashboardTab('${tab}')"]`).classList.add('active');
+
+            if (tab === 'my-complaints') {
+                loadComplaints();
+            } else if (tab === 'water-bodies') {
+                loadWaterBodies();
+            } else if (tab === 'alerts') {
+                loadAlerts();
+            }
         }
 
-        // Map Setup
-        const map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        // Location Picker Modal
+        function openLocationModal() {
+            document.getElementById('locationModal').classList.add('show');
+            
+            // Initialize map in modal
+            setTimeout(() => {
+                const modalMap = L.map('location-picker-map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
+                L.control.zoom({ position: 'bottomright' }).addTo(modalMap);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(modalMap);
 
-        // File upload UI
-        const fileInput = document.getElementById('imageUpload');
+                // Add water body boundaries (simplified circles)
+                waterBodiesData.forEach(wb => {
+                    L.circleMarker([wb.lat, wb.lng], {
+                        radius: 8,
+                        fillColor: '#10b981',
+                        color: '#10b981',
+                        weight: 2,
+                        opacity: 0.8,
+                        fillOpacity: 0.3
+                    }).bindPopup(wb.name).addTo(modalMap);
+                });
+
+                // Click to select location
+                modalMap.on('click', function(e) {
+                    const { lat, lng } = e.latlng;
+                    selectedCoordinates = { lat, lng };
+                    selectedLocation = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                    
+                    // Check if within water body (simplified distance check)
+                    let nearestWaterBody = null;
+                    let minDistance = Infinity;
+                    
+                    waterBodiesData.forEach(wb => {
+                        const dist = Math.sqrt(Math.pow(lat - wb.lat, 2) + Math.pow(lng - wb.lng, 2));
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            nearestWaterBody = wb;
+                        }
+                    });
+
+                    // Auto-map to water body if within 0.05 degrees (~5.5km)
+                    if (minDistance < 0.05) {
+                        selectedLocation = nearestWaterBody.name;
+                    }
+
+                    document.getElementById('reportLocation').value = selectedLocation;
+                    closeLocationModal();
+                });
+            }, 100);
+        }
+
+        function closeLocationModal() {
+            document.getElementById('locationModal').classList.remove('show');
+        }
+
+        // File Upload UI
+        const reportImage = document.getElementById('reportImage');
         const fileWrapper = document.querySelector('.file-upload-wrapper');
         const fileIcon = fileWrapper.querySelector('i');
         const fileText = fileWrapper.querySelector('span');
 
-        fileInput.addEventListener('change', function(e) {
+        reportImage.addEventListener('change', function(e) {
             if (this.files && this.files.length > 0) {
                 fileIcon.className = 'fa-solid fa-check-circle';
                 fileIcon.style.color = '#10b981';
@@ -137,73 +698,211 @@
             }
         });
 
-        // Submit Logic (Posts to /complaints and runs API Prediction simultaneously for instant feedback)
+        // Submit Complaint
         async function submitComplaint() {
-            const loc = document.getElementById('location').value;
-            const desc = document.getElementById('description').value;
-            const file = fileInput.files[0];
+            const location = document.getElementById('reportLocation').value.trim();
+            const description = document.getElementById('reportDescription').value.trim();
+            const imageFile = reportImage.files[0];
 
-            if (!loc || !file) return alert("Location and Image are required!");
+            if (!location || !description || !imageFile) {
+                alert('Please fill all fields and upload an image');
+                return;
+            }
 
-            document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
-            document.getElementById('submitBtn').disabled = true;
-
-            const formData = new FormData();
-            formData.append("location", loc);
-            formData.append("description", desc);
-            formData.append("user_id", userId);
-            formData.append("file", file);
+            const btn = document.getElementById('submitReportBtn');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
 
             try {
-                // 1. Submit to Database
-                const res = await fetch('http://127.0.0.1:8000/complaints', { method: 'POST', body: formData });
-                if (!res.ok) throw new Error("Failed to submit.");
+                const formData = new FormData();
+                formData.append('location', location);
+                formData.append('description', description);
+                formData.append('user_id', userId);
+                formData.append('file', imageFile);
+                if (selectedCoordinates) {
+                    formData.append('lat', selectedCoordinates.lat);
+                    formData.append('lng', selectedCoordinates.lng);
+                }
 
-                // 2. Perform Instant AI Analysis (for citizen instant feedback)
+                const response = await fetch('http://127.0.0.1:8000/complaints', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Failed to submit complaint');
+
+                // Show success message
+                document.getElementById('successNotification').classList.add('show');
+                setTimeout(() => document.getElementById('successNotification').classList.remove('show'), 4000);
+
+                // Reset form
+                document.getElementById('reportLocation').value = '';
+                document.getElementById('reportDescription').value = '';
+                reportImage.value = '';
+                fileText.textContent = 'Click to upload image';
+                fileIcon.className = 'fa-solid fa-cloud-arrow-up';
+                fileIcon.style.color = '#3b82f6';
+                
+                // Show AI result
                 const aiForm = new FormData();
-                aiForm.append("file", file);
+                aiForm.append('file', imageFile);
                 const aiRes = await fetch('http://127.0.0.1:8000/predict', { method: 'POST', body: aiForm });
                 const aiData = await aiRes.json();
                 
-                let sev = (aiData.water_pixels < 1000) ? "<span style='color:red'>High Alert</span>" : "<span style='color:#10b981'>Safe</span>";
-
+                const severity = aiData.water_pixels < 1000 ? 'CRITICAL' : 'MODERATE';
                 document.getElementById('result-container').classList.remove('hidden');
                 document.getElementById('result-content').innerHTML = `
-                    <div style="color: #10b981; font-weight: bold; margin-bottom: 10px;"><i class="fa-solid fa-check"></i> Ticket Created Successfully!</div>
-                    <div style="font-size: 0.9rem; color: #94a3b8;">Instant AI Scan Result: ${sev} (${aiData.water_pixels} water px)</div>
+                    <div class="result-header" style="color: #10b981; margin-bottom: 1rem;">
+                        <i class="fa-solid fa-check-circle"></i> Report Submitted Successfully
+                    </div>
+                    <div style="font-size: 0.9rem;">
+                        <div style="margin-bottom: 0.5rem;"><strong>AI Analysis:</strong> ${severity}</div>
+                        <div>Water pixels detected: <strong>${aiData.water_pixels}</strong></div>
+                    </div>
                 `;
-            } catch (err) {
-                alert(err.message);
+
+            } catch (error) {
+                alert('Error: ' + error.message);
             } finally {
-                document.getElementById('submitBtn').innerHTML = '<i class="fa-regular fa-paper-plane"></i> Submit to Authorities';
-                document.getElementById('submitBtn').disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
             }
         }
 
+        // Load Complaints
         async function loadComplaints() {
             const list = document.getElementById('complaintsList');
-            list.innerHTML = '<div style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
             
             try {
-                const res = await fetch(`http://127.0.0.1:8000/complaints/user/${userId}`);
-                const data = await res.json();
-                list.innerHTML = '';
-                
-                if (data.length === 0) { list.innerHTML = '<p style="color:var(--text-secondary);">No complaints found.</p>'; return; }
+                const response = await fetch(`http://127.0.0.1:8000/complaints/user/${userId}`);
+                const complaints = await response.json();
 
-                data.forEach(c => {
+                list.innerHTML = '';
+
+                if (!complaints || complaints.length === 0) {
+                    list.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No complaints submitted yet</p>';
+                    updateComplaintStats([], complaints);
+                    return;
+                }
+
+                // Update stats
+                updateComplaintStats(complaints, complaints);
+
+                // Display complaints
+                complaints.forEach(complaint => {
+                    const statusClass = `status-${complaint.status.toLowerCase().replace(' ', '-')}`;
+                    const statusIcon = complaint.status === 'Pending' ? 'fa-hourglass' : 
+                                      complaint.status === 'In Progress' ? 'fa-spinner' : 'fa-check';
+                    
                     list.innerHTML += `
                         <div class="complaint-card">
-                            <span class="status-badge status-${c.status}">${c.status}</span>
-                            <div style="font-weight: 600; margin-bottom: 5px;"><i class="fa-solid fa-location-dot" style="color:var(--accent-blue)"></i> ${c.location}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${c.description || 'No description provided.'}</div>
+                            <div class="complaint-header">
+                                <div class="complaint-location">
+                                    <i class="fa-solid fa-location-dot"></i> ${complaint.location}
+                                </div>
+                                <span class="status-badge ${statusClass}">
+                                    <i class="fa-solid fa-${statusIcon}"></i> ${complaint.status}
+                                </span>
+                            </div>
+                            <div class="complaint-description">${complaint.description}</div>
+                            <div class="complaint-meta">
+                                <span><i class="fa-solid fa-calendar"></i> ${new Date(complaint.created_at).toLocaleDateString()}</span>
+                                <span><i class="fa-solid fa-id-badge"></i> ID: ${complaint.id.toString().slice(0, 8)}</span>
+                            </div>
                         </div>
                     `;
                 });
-            } catch (err) {
-                list.innerHTML = '<p style="color:var(--accent-danger);">Failed to load.</p>';
+            } catch (error) {
+                list.innerHTML = '<p style="color: var(--accent-danger);">Failed to load complaints</p>';
             }
         }
+
+        function updateComplaintStats(complaints) {
+            const total = complaints.length;
+            const pending = complaints.filter(c => c.status === 'Pending').length;
+            const inProgress = complaints.filter(c => c.status === 'In Progress').length;
+            const resolved = complaints.filter(c => c.status === 'Resolved').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-pending').textContent = pending;
+            document.getElementById('stat-in-progress').textContent = inProgress;
+            document.getElementById('stat-resolved').textContent = resolved;
+        }
+
+        // Load Water Bodies
+        function loadWaterBodies() {
+            const list = document.getElementById('waterBodiesList');
+            list.innerHTML = '';
+
+            waterBodiesData.forEach(wb => {
+                list.innerHTML += `
+                    <div class="water-body-card" onclick="selectWaterBody('${wb.name}', ${wb.lat}, ${wb.lng})">
+                        <div class="water-body-name">
+                            <i class="fa-solid fa-water"></i> ${wb.name}
+                        </div>
+                        <div class="water-body-info">
+                            <span><strong>Area:</strong> ${wb.area}</span>
+                            <span><strong>Status:</strong> ${wb.status}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function selectWaterBody(name, lat, lng) {
+            selectedLocation = name;
+            selectedCoordinates = { lat, lng };
+            document.getElementById('reportLocation').value = name;
+            switchDashboardTab('report');
+        }
+
+        // Load Alerts
+        function loadAlerts() {
+            const alertsList = document.getElementById('alertsList');
+            
+            // Sample alerts
+            const sampleAlerts = [
+                { type: 'success', title: 'Complaint #12345 Resolved', message: 'Your complaint about Chembarambakkam Lake has been successfully resolved.' },
+                { type: 'info', title: 'Status Update: In Progress', message: 'Your complaint is being investigated by local authorities.' },
+                { type: 'info', title: 'New Alert in Your Area', message: 'Encroachment detected near Puzhal Lake, 2.3 km from you.' },
+                { type: 'info', title: 'Weekly Summary', message: 'You have submitted 3 reports this week. 2 resolved, 1 in progress.' }
+            ];
+
+            alertsList.innerHTML = '';
+            sampleAlerts.forEach(alert => {
+                const alertClass = alert.type === 'success' ? 'success' : alert.type === 'danger' ? 'danger' : '';
+                const icon = alert.type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+                
+                alertsList.innerHTML += `
+                    <div class="alert-item ${alertClass}">
+                        <div class="alert-title">
+                            <i class="fa-solid fa-${icon}"></i> ${alert.title}
+                        </div>
+                        <div class="alert-message">${alert.message}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Logout
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('locationModal');
+            if (event.target === modal) {
+                closeLocationModal();
+            }
+        }
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAlerts();
+        });
     </script>
 </body>
 </html>

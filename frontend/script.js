@@ -187,3 +187,244 @@ async function uploadData() {
         analyzeBtnDiv.disabled = false;
     }
 }
+
+// ========== LANDING PAGE FUNCTIONALITY ==========
+
+// Initialize Landing Page Map
+function initializeLandingMap() {
+    const landingMapElement = document.getElementById('landing-map');
+    
+    // Only initialize if landing map exists
+    if (!landingMapElement) return;
+
+    const landingMap = L.map('landing-map', {
+        zoomControl: false
+    }).setView([13.0827, 80.2707], 11);
+
+    L.control.zoom({
+        position: 'bottomright'
+    }).addTo(landingMap);
+
+    // Add Dark Matter Base Map
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(landingMap);
+
+    // Sample Water Body Data
+    const waterBodies = [
+        {
+            name: 'Chembarambakkam Lake',
+            lat: 12.9716,
+            lng: 79.8865,
+            status: 'Protected',
+            color: '#3b82f6',
+            complaints: 3,
+            encroachments: 1
+        },
+        {
+            name: 'Puzhal Lake',
+            lat: 13.1788,
+            lng: 80.0814,
+            status: 'Protected',
+            color: '#3b82f6',
+            complaints: 5,
+            encroachments: 2
+        },
+        {
+            name: 'Cooum River',
+            lat: 13.0827,
+            lng: 80.2707,
+            status: 'Encroachment Detected',
+            color: '#ef4444',
+            complaints: 12,
+            encroachments: 4
+        },
+        {
+            name: 'Kosasthalaiyar River',
+            lat: 13.2162,
+            lng: 80.1238,
+            status: 'Protected',
+            color: '#3b82f6',
+            complaints: 2,
+            encroachments: 0
+        },
+        {
+            name: 'Buckingham Canal',
+            lat: 13.1234,
+            lng: 80.1856,
+            status: 'Resolved',
+            color: '#10b981',
+            complaints: 8,
+            encroachments: 0
+        },
+        {
+            name: 'Batlagundu Tank',
+            lat: 13.0234,
+            lng: 80.3456,
+            status: 'Protected',
+            color: '#3b82f6',
+            complaints: 1,
+            encroachments: 0
+        }
+    ];
+
+    // Add markers for each water body
+    waterBodies.forEach(waterbody => {
+        const iconColor = waterbody.color;
+        
+        const waterIcon = L.divIcon({
+            className: 'water-body-marker',
+            html: `<div style="
+                width: 40px;
+                height: 40px;
+                background: ${iconColor};
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 15px ${iconColor}, 0 0 30px rgba(0,0,0,0.5);
+                border: 2px solid rgba(255,255,255,0.3);
+            ">
+                <i class="fa-solid fa-water" style="color: white; font-size: 1.2rem;"></i>
+            </div>`,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+        });
+
+        const marker = L.marker([waterbody.lat, waterbody.lng], {
+            icon: waterIcon
+        }).addTo(landingMap);
+
+        // Popup with information
+        const popupContent = `
+            <div style="
+                color: #f8fafc;
+                font-family: 'Inter', sans-serif;
+                min-width: 250px;
+            ">
+                <h4 style="
+                    margin: 0 0 0.75rem 0;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: #60a5fa;
+                ">${waterbody.name}</h4>
+                
+                <div style="
+                    background: rgba(255,255,255,0.05);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin: 0.75rem 0;
+                ">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #94a3b8;">Status:</span>
+                        <span style="
+                            color: ${waterbody.color};
+                            font-weight: 600;
+                        ">${waterbody.status}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #94a3b8;">Complaints:</span>
+                        <span style="color: #f8fafc; font-weight: 600;">${waterbody.complaints}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #94a3b8;">Encroachments:</span>
+                        <span style="color: #f8fafc; font-weight: 600;">${waterbody.encroachments}</span>
+                    </div>
+                </div>
+                
+                <a href="citizen.html" style="
+                    display: inline-block;
+                    width: 100%;
+                    background: linear-gradient(135deg, #3b82f6, #2563eb);
+                    color: white;
+                    text-align: center;
+                    padding: 0.65rem;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    font-weight: 500;
+                    font-size: 0.9rem;
+                    margin-top: 0.75rem;
+                    transition: all 0.3s ease;
+                    border: none;
+                    cursor: pointer;
+                ">Report Issue</a>
+            </div>
+        `;
+
+        marker.bindPopup(popupContent);
+
+        // Add hover effect
+        marker.on('mouseover', function() {
+            this.openPopup();
+        });
+    });
+}
+
+// Navigate to map functionality
+function navigateToMap() {
+    // Scroll to map preview section
+    const mapSection = document.querySelector('.map-preview-section');
+    if (mapSection) {
+        mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Stats counter animation
+function animateStats() {
+    const animate = (element, target) => {
+        let current = 0;
+        const increment = target / 50;
+        const interval = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                element.textContent = target.toLocaleString();
+                clearInterval(interval);
+            } else {
+                element.textContent = Math.floor(current).toLocaleString();
+            }
+        }, 30);
+    };
+
+    const waterBodiesEl = document.getElementById('stat-water-bodies');
+    const complaintsEl = document.getElementById('stat-complaints');
+    const resolvedEl = document.getElementById('stat-resolved');
+    const citizensEl = document.getElementById('stat-citizens');
+
+    if (waterBodiesEl) animate(waterBodiesEl, 1245);
+    if (complaintsEl) animate(complaintsEl, 8392);
+    if (resolvedEl) animate(resolvedEl, 3156);
+    if (citizensEl) animate(citizensEl, 45230);
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the landing page
+    if (document.querySelector('.landing-page')) {
+        document.body.classList.add('landing-mode');
+        
+        // Initialize landing map
+        initializeLandingMap();
+        
+        // Animate stats when they come into view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateStats();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        const statsSection = document.querySelector('.stats-section');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+    }
+    // Dashboard initialization (existing code will still work)
+    else if (document.getElementById('map')) {
+        document.body.classList.add('dashboard-mode');
+        // Map is already initialized at the top of the script
+    }
+});
