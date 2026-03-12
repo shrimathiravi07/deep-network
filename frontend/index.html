@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water-Guard AI | Live Encroachment Detection</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Sidebar Panel -->
+        <aside class="glass-panel sidebar">
+            <div class="logo-section">
+                <div class="icon-ring">
+                    <i class="fa-solid fa-water"></i>
+                </div>
+                <div>
+                    <h1>Water-Guard AI</h1>
+                    <span class="subtitle">Encroachment Monitoring</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="waterID"><i class="fa-solid fa-map-pin"></i> Select Waterbody ID</label>
+                <div class="input-wrapper">
+                    <input type="text" id="waterID" placeholder="e.g. TN-L01" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="imageUpload"><i class="fa-solid fa-satellite"></i> Upload Satellite Image</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="imageUpload" accept="image/*">
+                    <div class="file-upload-ui">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Click to browse or drag & drop</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="primary-btn" id="analyzeBtn" onclick="uploadData()">
+                <i class="fa-solid fa-microchip"></i> Analyze Encroachment
+            </button>
+
+            <!-- Results Section -->
+            <div id="result-container" class="result-card hidden">
+                <div class="loader hidden" id="loading-spinner"></div>
+                <div id="result-content"></div>
+            </div>
+            
+            <div class="credits">
+                <p>Powered by Deep Learning & Satellite Imagery</p>
+            </div>
+        </aside>
+
+        <!-- Main Map Area -->
+        <main class="map-container">
+            <div id="map"></div>
+            <!-- Floating overlay on map -->
+            <div class="map-overlay glass-panel">
+                <div class="stat-box">
+                    <span class="stat-value">Active</span>
+                    <span class="stat-label">System Status</span>
+                </div>
+                <div class="stat-box align-right">
+                    <span class="stat-value"><i class="fa-solid fa-location-crosshairs"></i> Chennai</span>
+                    <span class="stat-label">Current Region</span>
+                </div>
+            </div>
+        </main>
+        
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>

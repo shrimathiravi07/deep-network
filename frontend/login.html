@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water-Guard AI | Portal Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            background: var(--bg-dark);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorative Background Elements */
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+        }
+        .circle-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(59, 130, 246, 0.2);
+            top: -100px;
+            left: -100px;
+        }
+        .circle-2 {
+            width: 500px;
+            height: 500px;
+            background: rgba(16, 185, 129, 0.15);
+            bottom: -150px;
+            right: -100px;
+        }
+
+        .login-box {
+            position: relative;
+            z-index: 10;
+            width: 400px;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .login-box .logo-section {
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-direction: column;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .error-msg {
+            color: var(--accent-danger);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+
+        <div class="login-box glass-panel">
+            <div class="logo-section">
+                <div class="icon-ring" style="width: 64px; height: 64px; font-size: 2rem; margin-bottom: 1rem;">
+                    <i class="fa-solid fa-water"></i>
+                </div>
+                <h1>Water-Guard AI</h1>
+                <span class="subtitle">Secure Gateway</span>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchMode('login')" id="tab-login">Login</div>
+                <div class="tab" onclick="switchMode('register')" id="tab-register">Register</div>
+            </div>
+
+            <div class="error-msg" id="errorMsg">Invalid credentials.</div>
+
+            <form id="authForm" onsubmit="handleAuth(event)">
+                <div class="control-group">
+                    <div class="input-wrapper">
+                        <input type="text" id="username" placeholder="Username" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+                </div>
+
+                <div class="control-group" id="roleGroup" style="display: none;">
+                    <div class="input-wrapper">
+                        <select id="role" style="width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--panel-border); border-radius: 8px; color: var(--text-primary); outline: none;">
+                            <option value="citizen" style="background: var(--bg-dark);">Citizen</option>
+                            <option value="officer" style="background: var(--bg-dark);">Officer</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="primary-btn" id="authBtn">
+                    Sign In <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let mode = 'login';
+        
+        function switchMode(newMode) {
+            mode = newMode;
+            document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+            document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+            document.getElementById('roleGroup').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('authBtn').innerHTML = mode === 'login' ? 'Sign In <i class="fa-solid fa-arrow-right-to-bracket"></i>' : 'Create Account <i class="fa-solid fa-user-plus"></i>';
+            document.getElementById('errorMsg').style.display = 'none';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const btn = document.getElementById('authBtn');
+
+            const originalBtn = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+            btn.disabled = true;
+
+            try {
+                const endpoint = mode === 'login' ? '/login' : '/register';
+                const body = mode === 'login' ? { username, password } : { username, password, role };
+
+                const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.detail || 'Authentication failed');
+                }
+
+                // Save user data locally
+                localStorage.setItem('user_id', mode === 'login' ? data.user_id : data.id);
+                localStorage.setItem('username', mode === 'login' ? data.username : data.username);
+                localStorage.setItem('role', mode === 'login' ? data.role : data.role);
+
+                // Redirect based on role
+                const finalRole = mode === 'login' ? data.role : data.role;
+                if (finalRole === 'officer') {
+                    window.location.href = 'officer.html';
+                } else {
+                    window.location.href = 'citizen.html';
+                }
+
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+                btn.innerHTML = originalBtn;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water-Guard AI | Officer Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .app-container {
+            flex-direction: column;
+            padding: 2rem;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            flex: 1;
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+        }
+
+        .stat-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-num { font-size: 1.8rem; font-weight: 700; color: white; }
+        .stat-title { font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; }
+
+        /* Table */
+        .glass-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+        }
+
+        .glass-table th, .glass-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-table th { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        .glass-table tr:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .status-select {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid var(--panel-border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        .status-select:focus { border-color: var(--accent-blue); }
+
+        .badge-pending { color: #f59e0b; }
+        .badge-investigating { color: #3b82f6; }
+        .badge-resolved { color: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section" style="margin-bottom: 0;">
+                <div class="icon-ring" style="width: 50px; height: 50px; font-size: 1.2rem;"><i class="fa-solid fa-building-shield"></i></div>
+                <div>
+                    <h1>Authorities Command Center</h1>
+                    <span class="subtitle">Officer: <span id="officerName">Admin</span></span>
+                </div>
+            </div>
+            
+            <button class="primary-btn" style="width: auto; padding: 10px 20px;" onclick="logout()">
+                <i class="fa-solid fa-power-off"></i> Sign Out
+            </button>
+        </header>
+
+        <!-- Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <i class="fa-solid fa-clipboard-list" style="color: #6366f1;"></i>
+                <div class="stat-details">
+                    <span class="stat-num" id="totalComplaints">0</span>
+                    <span class="stat-title">Total Petitions</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i>
+                <div class="stat-details">
+                    <span class="stat-num" id="pendingComplaints">0</span>
+                    <span class="stat-title">Action Required</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-check-double" style="color: #10b981;"></i>
+                <div class="stat-details">
+                    <span class="stat-num" id="resolvedComplaints">0</span>
+                    <span class="stat-title">Resolved Cases</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <h3 style="margin-bottom: 1rem; color: white;">Regional Complaints Register</h3>
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Citizen ID</th>
+                    <th>Location</th>
+                    <th>Report Details</th>
+                    <th>Evidence</th>
+                    <th>Current Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="complaintsTableBody">
+                <tr><td colspan="7" style="text-align: center;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Check Auth and role
+        const role = localStorage.getItem('role');
+        if (role !== 'officer') { window.location.href = 'login.html'; }
+        document.getElementById('officerName').textContent = localStorage.getItem('username');
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        async function fetchAllComplaints() {
+            try {
+                const res = await fetch('http://127.0.0.1:8000/complaints');
+                const complaints = await res.json();
+                
+                const tbody = document.getElementById('complaintsTableBody');
+                tbody.innerHTML = '';
+                
+                let pending = 0;
+                let resolved = 0;
+
+                if (complaints.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No complaints logged yet.</td></tr>';
+                }
+
+                complaints.forEach(c => {
+                    if (c.status === 'pending') pending++;
+                    if (c.status === 'resolved') resolved++;
+
+                    const badgeClass = c.status === 'pending' ? 'badge-pending' : (c.status === 'investigating' ? 'badge-investigating' : 'badge-resolved');
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="color: #94a3b8;">#${c.id}</td>
+                            <td>CTX-${c.user_id}</td>
+                            <td style="font-weight: 600;"><i class="fa-solid fa-map-pin badge-investigating"></i> ${c.location}</td>
+                            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.description}">${c.description || 'N/A'}</td>
+                            <td><a href="#" style="color: var(--accent-blue); text-decoration: none;"><i class="fa-solid fa-image"></i> View Imagery</a></td>
+                            <td class="${badgeClass}" style="font-weight: 600; text-transform: capitalize;">${c.status}</td>
+                            <td>
+                                <select class="status-select" onchange="updateStatus(${c.id}, this.value)">
+                                    <option value="pending" ${c.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="investigating" ${c.status === 'investigating' ? 'selected' : ''}>Investigating</option>
+                                    <option value="resolved" ${c.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('totalComplaints').innerText = complaints.length;
+                document.getElementById('pendingComplaints').innerText = pending;
+                document.getElementById('resolvedComplaints').innerText = resolved;
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('complaintsTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error fetching database.</td></tr>';
+            }
+        }
+
+        async function updateStatus(id, newStatus) {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/complaints/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (res.ok) fetchAllComplaints(); // Refresh table and stats globally
+            } catch (error) {
+                alert("Failed to update status on server.");
+            }
+        }
+
+        // Init
+        fetchAllComplaints();
+    </script>
+</body>
+</html>

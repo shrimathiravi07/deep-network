@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water-Guard AI | Citizen Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tabs { display: flex; gap: 10px; margin-bottom: 2rem; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--panel-border); background: rgba(255,255,255,0.05); color: var(--text-secondary); cursor: pointer; transition: all 0.3s ease; }
+        .tab-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        textarea { width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--panel-border); border-radius: 8px; color: var(--text-primary); outline: none; resize: vertical; min-height: 80px; }
+        textarea:focus { border-color: var(--accent-blue); }
+        .complaint-list { display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; }
+        .complaint-card { padding: 1rem; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--panel-border); position: relative; }
+        .status-badge { position: absolute; top: 1rem; right: 1rem; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .status-investigating { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .status-resolved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="glass-panel sidebar" style="width: 420px; overflow-y: auto;">
+            <div class="logo-section">
+                <div class="icon-ring"><i class="fa-solid fa-users"></i></div>
+                <div>
+                    <h1>Citizen Portal</h1>
+                    <span class="subtitle">Welcome, <span id="username-display">User</span></span>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('report')" id="btn-report">Report Encroachment</button>
+                <button class="tab-btn" onclick="switchTab('track')" id="btn-track">Track Status</button>
+            </div>
+
+            <!-- Report Tab -->
+            <div id="tab-report">
+                <div class="control-group">
+                    <label for="location"><i class="fa-solid fa-map-pin"></i> Location Name / Coordinates</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="location" placeholder="e.g. Ousteri Lake South" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="description"><i class="fa-solid fa-align-left"></i> Description</label>
+                    <textarea id="description" placeholder="Describe the suspected encroachment..."></textarea>
+                </div>
+
+                <div class="control-group">
+                    <label for="imageUpload"><i class="fa-solid fa-camera"></i> Photo / Satellite Evidence</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="imageUpload" accept="image/*">
+                        <div class="file-upload-ui">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>Click to browse</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="primary-btn" id="submitBtn" onclick="submitComplaint()">
+                    <i class="fa-regular fa-paper-plane"></i> Submit to Authorities
+                </button>
+                
+                <div id="result-container" class="result-card hidden">
+                    <div class="loader hidden" id="loading-spinner"></div>
+                    <div id="result-content"></div>
+                </div>
+            </div>
+
+            <!-- Track Tab -->
+            <div id="tab-track" style="display: none;">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-list-check"></i> My Complaints</h3>
+                <div class="complaint-list" id="complaintsList"></div>
+            </div>
+
+            <div class="credits" style="margin-top: 2rem;">
+                <a href="#" onclick="logout()" style="color: var(--accent-danger); text-decoration: none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Map Area -->
+        <main class="map-container">
+            <div id="map"></div>
+            <div class="map-overlay glass-panel">
+                <div class="stat-box">
+                    <span class="stat-value">Citizen AI</span>
+                    <span class="stat-label">Module Active</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Check Auth
+        const userId = localStorage.getItem('user_id');
+        if (!userId) { window.location.href = 'login.html'; }
+        document.getElementById('username-display').textContent = localStorage.getItem('username');
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        function switchTab(tab) {
+            document.getElementById('tab-report').style.display = tab === 'report' ? 'block' : 'none';
+            document.getElementById('tab-track').style.display = tab === 'track' ? 'block' : 'none';
+            document.getElementById('btn-report').classList.toggle('active', tab === 'report');
+            document.getElementById('btn-track').classList.toggle('active', tab === 'track');
+            
+            if (tab === 'track') loadComplaints();
+        }
+
+        // Map Setup
+        const map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+        // File upload UI
+        const fileInput = document.getElementById('imageUpload');
+        const fileWrapper = document.querySelector('.file-upload-wrapper');
+        const fileIcon = fileWrapper.querySelector('i');
+        const fileText = fileWrapper.querySelector('span');
+
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                fileIcon.className = 'fa-solid fa-check-circle';
+                fileIcon.style.color = '#10b981';
+                fileText.textContent = this.files[0].name;
+                fileWrapper.style.borderColor = '#10b981';
+            }
+        });
+
+        // Submit Logic (Posts to /complaints and runs API Prediction simultaneously for instant feedback)
+        async function submitComplaint() {
+            const loc = document.getElementById('location').value;
+            const desc = document.getElementById('description').value;
+            const file = fileInput.files[0];
+
+            if (!loc || !file) return alert("Location and Image are required!");
+
+            document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+            document.getElementById('submitBtn').disabled = true;
+
+            const formData = new FormData();
+            formData.append("location", loc);
+            formData.append("description", desc);
+            formData.append("user_id", userId);
+            formData.append("file", file);
+
+            try {
+                // 1. Submit to Database
+                const res = await fetch('http://127.0.0.1:8000/complaints', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error("Failed to submit.");
+
+                // 2. Perform Instant AI Analysis (for citizen instant feedback)
+                const aiForm = new FormData();
+                aiForm.append("file", file);
+                const aiRes = await fetch('http://127.0.0.1:8000/predict', { method: 'POST', body: aiForm });
+                const aiData = await aiRes.json();
+                
+                let sev = (aiData.water_pixels < 1000) ? "<span style='color:red'>High Alert</span>" : "<span style='color:#10b981'>Safe</span>";
+
+                document.getElementById('result-container').classList.remove('hidden');
+                document.getElementById('result-content').innerHTML = `
+                    <div style="color: #10b981; font-weight: bold; margin-bottom: 10px;"><i class="fa-solid fa-check"></i> Ticket Created Successfully!</div>
+                    <div style="font-size: 0.9rem; color: #94a3b8;">Instant AI Scan Result: ${sev} (${aiData.water_pixels} water px)</div>
+                `;
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                document.getElementById('submitBtn').innerHTML = '<i class="fa-regular fa-paper-plane"></i> Submit to Authorities';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        async function loadComplaints() {
+            const list = document.getElementById('complaintsList');
+            list.innerHTML = '<div style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+            
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/complaints/user/${userId}`);
+                const data = await res.json();
+                list.innerHTML = '';
+                
+                if (data.length === 0) { list.innerHTML = '<p style="color:var(--text-secondary);">No complaints found.</p>'; return; }
+
+                data.forEach(c => {
+                    list.innerHTML += `
+                        <div class="complaint-card">
+                            <span class="status-badge status-${c.status}">${c.status}</span>
+                            <div style="font-weight: 600; margin-bottom: 5px;"><i class="fa-solid fa-location-dot" style="color:var(--accent-blue)"></i> ${c.location}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${c.description || 'No description provided.'}</div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                list.innerHTML = '<p style="color:var(--accent-danger);">Failed to load.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

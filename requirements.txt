@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+torch
+torchvision
+segmentation-models-pytorch
+opencv-python
+numpy
+psycopg2-binary
+python-multipart
