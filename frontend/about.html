@@ -4,36 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water-Guard AI | About Us</title>
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <script src="auth.js?v=2"></script>
     <style>
         .about-hero {
-            background: #0B1218 !important; /* Forces no image */
+            background: #0B1218 !important; 
             min-height: 40vh !important;
             padding-top: 120px;
         }
-
         .about-content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 4rem 2rem;
         }
-
         .mission-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             margin-top: 3rem;
         }
-
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
@@ -42,24 +33,20 @@
             padding: 2.5rem;
             transition: transform 0.3s ease;
         }
-
         .glass-card:hover {
             transform: translateY(-10px);
             border-color: var(--accent-blue);
         }
-
         .glass-card i {
             font-size: 2.5rem;
             color: var(--accent-blue);
             margin-bottom: 1.5rem;
         }
-
         .glass-card h3 {
             font-size: 1.5rem;
             margin-bottom: 1rem;
             color: #fff;
         }
-
         .glass-card p {
             color: var(--text-secondary);
             line-height: 1.6;
@@ -67,7 +54,6 @@
     </style>
 </head>
 <body class="landing-mode">
-    <!-- Navigation Header -->
     <header class="landing-header">
         <div class="header-container">
             <a href="index.html" class="logo-brand">
@@ -78,14 +64,15 @@
             </a>
             <nav class="header-nav">
                 <a href="index.html" class="nav-link">Home</a>
+                <a href="about.html" class="nav-link">About</a>
                 <a href="history.html" class="nav-link">Historical Data</a>
+                <a href="contact.html" class="nav-link">Contact</a>
                 <a href="login.html" class="nav-link login-btn">Login / Register</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <!-- About Hero Section -->
         <section class="hero-section about-hero">
             <div class="hero-overlay" style="background: transparent;"></div>
             <div class="hero-content" style="grid-template-columns: 1fr; text-align: center;">
@@ -96,7 +83,6 @@
             </div>
         </section>
 
-        <!-- Mission Details -->
         <section class="about-content">
             <div class="section-header">
                 <h3>The Mission</h3>
@@ -125,12 +111,10 @@
         </section>
     </main>
 
-    <!-- Footer copied from index.html concept -->
     <footer class="landing-footer">
         <div class="footer-bottom">
             <p>&copy; 2026 Water-Guard AI. All rights reserved. | Protecting Nature with Intelligence</p>
         </div>
     </footer>
-
 </body>
 </html>

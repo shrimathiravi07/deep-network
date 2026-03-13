@@ -1,4 +1,3 @@
-/* Base Design System */
 :root {
     --bg-dark: #0B1218;
     --panel-bg: rgba(15, 23, 42, 0.9);
@@ -25,7 +24,6 @@ body {
     line-height: 1.6;
 }
 
-/* Layout Containers */
 .landing-page {
     width: 100%;
 }
@@ -47,7 +45,6 @@ body {
     z-index: 1000;
 }
 
-/* Typography & Navigation */
 .logo-brand {
     display: flex;
     align-items: center;
@@ -85,7 +82,6 @@ body {
     border-radius: 6px;
 }
 
-/* Sections */
 section {
     padding: 80px 2rem;
     max-width: 1400px;
@@ -116,7 +112,6 @@ section {
     margin: 0 auto 3rem;
 }
 
-/* Components */
 .glass-panel, .glass-card {
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
@@ -124,16 +119,9 @@ section {
     padding: 2rem;
 }
 
-/* Removals */
-* {
-    transition: none !important; /* Remove all transitions to kill hover effects */
-}
-
-/* Unified Colors */
 .accent-blue { color: var(--accent-blue); }
 .accent-green { color: var(--accent-green); }
 
-/* Map Area */
 .map-container {
     width: 100%;
     height: 500px;
@@ -147,7 +135,6 @@ section {
     height: 100%;
 }
 
-/* Statistics Grid */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -165,7 +152,6 @@ section {
     display: block;
 }
 
-/* Form Styles */
 input, textarea, select {
     width: 100%;
     padding: 12px;
@@ -190,7 +176,6 @@ input, textarea, select {
 .btn-primary { background: var(--accent-blue); color: #fff; }
 .btn-secondary { background: var(--panel-border); color: #fff; }
 
-/* Dashboard Sidebar */
 .dashboard-layout {
     display: grid;
     grid-template-columns: 280px 1fr;
@@ -221,7 +206,6 @@ input, textarea, select {
     color: var(--accent-blue);
 }
 
-/* Badge Styles */
 .badge {
     padding: 4px 10px;
     border-radius: 4px;
@@ -233,7 +217,6 @@ input, textarea, select {
 .badge-investigating { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
 .badge-resolved { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
 
-/* Table Styles */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -252,7 +235,6 @@ th {
     text-transform: uppercase;
 }
 
-/* Case Study / Impact Panels */
 .case-study-card {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -261,7 +243,6 @@ th {
     background: var(--panel-bg);
 }
 
-/* Hide animations */
 @keyframes none { from { opacity: 1; } to { opacity: 1; } }
 .hero-scanline, .radar-mask, .unet-overlay {
     display: none !important;

@@ -1,4 +1,3 @@
-# 1. Setup & Imports
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,15 +8,11 @@ from PIL import Image
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from google.colab import drive
 
-# Mount Drive
-drive.mount('/content/drive')
-
-# ── Config ─────────────────────────────────────────────────────────────────
-IMG_DIR    = "/content/drive/MyDrive/training_data/images"
-MASK_DIR   = "/content/drive/MyDrive/training_data/masks"
-SAVE_DIR   = "/content/drive/MyDrive/models"
+# Default local paths
+IMG_DIR    = "training_data/images"
+MASK_DIR   = "training_data/masks"
+SAVE_DIR   = "models"
 BATCH_SIZE = 8
 EPOCHS     = 10
 LR         = 1e-3
@@ -27,14 +22,12 @@ IMG_SIZE   = (256, 256)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
 
-# ── Robust Dataset ──────────────────────────────────────────────────────────
 class WaterDataset(Dataset):
     def __init__(self, img_dir, mask_dir, img_size=IMG_SIZE):
         self.img_dir  = img_dir
         self.mask_dir = mask_dir
         self.img_size = img_size
 
-        # Get all image files
         all_images = sorted([f for f in os.listdir(img_dir) if f.lower().endswith('.jpg')])
 
         self.images = []
@@ -42,7 +35,6 @@ class WaterDataset(Dataset):
 
         print("Matching images with masks...")
         for f in all_images:
-            # Logic: '12345_sat.jpg' -> '12345_mask.png'
             mask_name = f.replace("_sat.jpg", "_mask.png")
             img_path = os.path.join(img_dir, f)
             mask_path = os.path.join(mask_dir, mask_name)
@@ -70,11 +62,9 @@ class WaterDataset(Dataset):
         mask = mask.resize(self.img_size, Image.NEAREST)
         mask = torch.from_numpy(np.array(mask)).long()
 
-        # Threshold: > 0 is water (1), 0 is background (0)
         mask = (mask > 0).long()
         return img, mask
 
-# ── U-Net Architecture ──────────────────────────────────────────────────────
 class DoubleConv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super().__init__()
@@ -120,13 +110,11 @@ class UNet(nn.Module):
             x = self.ups[i+1](x)
         return self.final_conv(x)
 
-# ── Loss & Metrics ──────────────────────────────────────────────────────────
 class CombinedLoss(nn.Module):
     def __init__(self):
         super().__init__()
         self.ce = nn.CrossEntropyLoss()
     def forward(self, logits, targets):
-        # Using CrossEntropy as base; simplified for stability
         return self.ce(logits, targets)
 
 def iou_score(logits, targets):
@@ -135,7 +123,6 @@ def iou_score(logits, targets):
     union = ((preds == 1) | (targets == 1)).sum().float()
     return (inter / (union + 1e-6)).item()
 
-# ── Execution ───────────────────────────────────────────────────────────────
 full_ds = WaterDataset(IMG_DIR, MASK_DIR)
 val_size = int(len(full_ds) * VAL_SPLIT)
 train_ds, val_ds = random_split(full_ds, [len(full_ds) - val_size, val_size])
@@ -153,7 +140,6 @@ best_val_loss = float("inf")
 
 print("\nStarting Training...")
 for epoch in range(1, EPOCHS + 1):
-    # Train
     model.train()
     train_loss, train_iou = 0, 0
     for img, mask in train_loader:
@@ -166,7 +152,6 @@ for epoch in range(1, EPOCHS + 1):
         train_loss += loss.item()
         train_iou += iou_score(out, mask)
 
-    # Val
     model.eval()
     val_loss, val_iou = 0, 0
     with torch.no_grad():

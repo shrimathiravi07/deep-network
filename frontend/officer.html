@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="auth.js?v=2"></script>
 </head>
 <body class="dashboard-mode">
     <div class="dashboard-layout">
@@ -20,14 +21,14 @@
                 <a href="#" class="sidebar-link active">
                     <i class="fa-solid fa-inbox"></i> Active Reports
                 </a>
-                <a href="#" class="sidebar-link">
+                <a href="analytics.html" class="sidebar-link">
                     <i class="fa-solid fa-chart-line"></i> Analytics Dashboard
                 </a>
                 <a href="#" class="sidebar-link">
                     <i class="fa-solid fa-clock"></i> Deadline Reminders
                 </a>
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;">
-                <a href="index.html" class="sidebar-link" style="color: var(--accent-danger);">
+                <a href="#" class="sidebar-link" style="color: var(--accent-danger);" onclick="logoutUser(event);">
                     <i class="fa-solid fa-sign-out-alt"></i> Logout
                 </a>
             </nav>
@@ -58,12 +59,9 @@
                         </tr>
                     </thead>
                     <tbody id="officerTableBody">
-                        <!-- Rows injected here -->
                     </tbody>
                 </table>
             </div>
-
-            <!-- Modal / Sidebar for action report (not implemented for simplicity, but mentioned) -->
         </main>
     </div>
 

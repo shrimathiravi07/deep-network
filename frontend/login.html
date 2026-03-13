@@ -3,141 +3,442 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water-Guard AI | Login & Register</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Water-Guard AI | Secure Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="auth.js?v=2"></script>
+</head>
     <style>
-        .auth-container {
-            min-height: 100vh;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: #0B1218;
+            overflow: hidden;
+            color: #f8fafc;
+        }
+        .login-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        .side-visual {
+            position: relative;
+            width: 50%;
+            background: #0B1218;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            z-index: 10;
+        }
+        .curve-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 250px;
+            background: #111821; 
+            border-top-left-radius: 100% 50%;
+            border-bottom-left-radius: 100% 50%;
+            z-index: -1;
+        }
+        .icons-arc {
+            position: absolute;
+            right: 120px;
+            width: 500px;
+            height: 500px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #0B1218;
         }
-        .auth-card {
+        .arc-line {
+            position: absolute;
             width: 100%;
-            max-width: 450px;
-            padding: 3rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
+            height: 100%;
+            border: 2px dashed rgba(59, 130, 246, 0.2);
+            border-radius: 50%;
+            transform: translateX(50%);
         }
-        .auth-tabs {
+        .role-icon-item {
+            position: absolute;
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .auth-tab {
-            padding: 10px 0;
+            flex-direction: column;
+            align-items: center;
             cursor: pointer;
-            color: var(--text-secondary);
-            font-weight: 600;
-            border-bottom: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20;
         }
-        .auth-tab.active {
-            color: var(--accent-blue);
-            border-bottom-color: var(--accent-blue);
+        .role-icon-item .img-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 3px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .role-icon-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+        .role-icon-item span {
+            margin-top: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .role-icon-item.active .img-circle {
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            transform: scale(1.1); 
+        }
+        .role-icon-item.active img {
+            opacity: 1;
+        }
+        .role-icon-item.active span {
+            color: #3b82f6;
+        }
+        .icon-admin { transform: translate(-140px, -190px); }
+        .icon-officer { transform: translate(-50px, 0px); }
+        .icon-citizen { transform: translate(-140px, 190px); }
+        .main-hero-display {
+            position: absolute;
+            right: -80px; 
+            width: 420px;
+            height: 420px;
+            background: #0B1218;
+            border-radius: 50%;
+            box-shadow: 0 0 80px rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            z-index: 30;
+            border: 10px solid #111821;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .main-hero-display:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 100px rgba(59, 130, 246, 0.2);
+        }
+        .main-hero-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: opacity 0.3s ease;
+        }
+        .side-form {
+            width: 50%;
+            background: #111821;
+            padding: 4rem 5rem 4rem 8rem; 
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            overflow-y: auto;
+            z-index: 5;
+        }
+        .side-form::-webkit-scrollbar {
+            width: 6px;
+        }
+        .side-form::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+        }
+        .form-content {
+            width: 100%;
+            max-width: 440px;
+            margin: auto 0; 
+        }
+        .form-content h2 {
+            font-weight: 800;
+            font-size: 2.5rem; 
+            color: #fff;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+        .form-content p#formSubtitle {
+            color: #94a3b8;
+            margin-bottom: 2.5rem; 
+            font-size: 1rem;
+            line-height: 1.6;
+            max-width: 380px;
         }
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem; 
         }
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        .role-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 1.5rem;
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px 20px; 
+            background: #0B1218 !important; 
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #fff !important;
+            transition: all 0.3s ease;
+            outline: none;
         }
-        .role-option {
-            padding: 10px;
-            text-align: center;
-            border: 1px solid var(--panel-border);
-            border-radius: 6px;
+        .form-group input:focus {
+            border-color: #3b82f6;
+            background: #111821 !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: #fff !important;
+            -webkit-box-shadow: 0 0 0px 1000px #0B1218 inset !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
             cursor: pointer;
-            font-size: 0.85rem;
+            margin-top: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
         }
-        .role-option.active {
-            background: rgba(59, 130, 246, 0.1);
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+        }
+        .toggle-mode {
+            text-align: center;
+            margin-top: 2rem;
+            margin-bottom: 2rem; 
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+        .toggle-mode a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 700;
+            margin-left: 5px;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.2s ease;
+        }
+        .toggle-mode a:hover {
+            color: #fff;
+            border-bottom-color: #3b82f6;
+        }
+        .landing-header {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo-brand h1 { color: #fff; }
+        .nav-link { color: #94a3b8 !important; }
+        .nav-link:hover { color: #fff !important; }
+        #authMessage {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            min-height: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <div class="icon-ring-small" style="margin: 0 auto 1rem; width: 48px; height: 48px;">
+    <header class="landing-header">
+        <div class="header-container">
+            <a href="index.html" class="logo-brand">
+                <div class="icon-ring-small text-white">
                     <i class="fa-solid fa-water"></i>
                 </div>
-                <h2 style="font-weight: 800;">Secure Portal</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">Citizen & Officer Access</p>
+                <h1>Water-Guard AI</h1>
+            </a>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="history.html" class="nav-link">Historical Data</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+                <a href="login.html" class="nav-link login-btn">Login / Register</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="login-wrapper">
+        <div class="side-visual">
+            <div class="curve-bg"></div>
+            
+            <div class="icons-arc">
+                <div class="arc-line"></div>
+                
+                <div class="role-icon-item icon-admin" data-role="admin" onclick="selectRole('admin')">
+                    <div class="img-circle">
+                        <img src="assets/role_admin.png" alt="Admin">
+                    </div>
+                    <span>Admin</span>
+                </div>
+
+                <div class="role-icon-item active icon-officer" data-role="officer" onclick="selectRole('officer')">
+                    <div class="img-circle">
+                        <img src="assets/role_officer.png" alt="Officer">
+                    </div>
+                    <span>Officer</span>
+                </div>
+
+                <div class="role-icon-item icon-citizen" data-role="citizen" onclick="selectRole('citizen')">
+                    <div class="img-circle">
+                        <img src="assets/role_citizen.png" alt="Citizen">
+                    </div>
+                    <span>Citizen</span>
+                </div>
             </div>
 
-            <div class="auth-tabs">
-                <div class="auth-tab active" onclick="switchTab('login')">Login</div>
-                <div class="auth-tab" onclick="switchTab('register')">Register</div>
+            <div class="main-hero-display">
+                <img id="mainRoleImg" src="assets/role_officer.png" alt="Current Role">
             </div>
+        </div>
 
-            <form id="authForm" onsubmit="handleAuth(event)">
-                <div class="form-group">
-                    <label>Email / Username</label>
-                    <input type="text" id="username" placeholder="Enter your credentials" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
-                </div>
+        <div class="side-form">
+            <div class="form-content">
+                <h2 id="formTitle">Sign In</h2>
+                <p id="formSubtitle">Select your role from the arc and enter your credentials to access the secure portal.</p>
 
-                <div id="registerFields" style="display: none;">
-                    <div class="form-group">
-                        <label>Select Your Role</label>
-                        <div class="role-selector">
-                            <div class="role-option active" data-role="citizen" onclick="selectRole(this)">Citizen</div>
-                            <div class="role-option" data-role="officer" onclick="selectRole(this)">Officer</div>
-                            <div class="role-option" data-role="admin" onclick="selectRole(this)">Admin</div>
+                <form id="authForm" onsubmit="handleAuth(event)">
+                    <div id="registerFields" style="display: none;">
+                        <div class="form-group">
+                            <label>Full Legal Name</label>
+                            <input type="text" id="fullName" placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label>Designated Role</label>
+                            <select id="regRole" onchange="selectRole(this.value)" style="width: 100%; padding: 18px; background: #0B1218; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; outline: none; appearance: none;">
+                                <option value="citizen">Active Citizen</option>
+                                <option value="officer">Official Officer</option>
+                                <option value="admin">System Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="districtField" style="display: none;">
+                            <label>Assigned District</label>
+                            <input type="text" id="regDistrict" placeholder="e.g. Chennai Central">
                         </div>
                     </div>
-                </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
-                    <span id="btnText">Sign In</span>
-                </button>
+                    <div class="form-group">
+                        <label>User Identity</label>
+                        <input type="email" id="username" placeholder="Email or Username" required>
+                    </div>
 
-                <p id="authMessage" style="margin-top: 1rem; text-align: center; font-size: 0.85rem;"></p>
-                
-                <div style="text-align: center; margin-top: 1.5rem;">
-                    <a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem;">Forgot Password?</a>
-                </div>
-            </form>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <span id="btnText">Log In to Portal</span>
+                    </button>
+                    
+                    <div id="authMessage"></div>
+
+                    <p class="toggle-mode" id="modeToggleText">
+                        New to the platform? <a href="#" onclick="toggleMode('register')">Create Account</a>
+                    </p>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentTab = 'login';
-        let selectedRole = 'citizen';
+        let currentTab = 'login'; 
+        let selectedRole = 'officer';
 
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+        const roleData = {
+            admin: {
+                img: 'assets/role_admin.png',
+                desc: 'Government control and boundary management portal.'
+            },
+            officer: {
+                img: 'assets/role_officer.png',
+                desc: 'Official inspector access for field reports and AI detections.'
+            },
+            citizen: {
+                img: 'assets/role_citizen.png',
+                desc: 'Community monitoring and illegal activity reporting center.'
+            }
+        };
+
+        function selectRole(role) {
+            selectedRole = role;
             
-            document.getElementById('registerFields').style.display = tab === 'register' ? 'block' : 'none';
-            document.getElementById('btnText').innerText = tab === 'login' ? 'Sign In' : 'Create Account';
-            document.getElementById('authMessage').innerText = '';
+            document.querySelectorAll('.role-icon-item').forEach(el => {
+                el.classList.remove('active');
+                if (el.dataset.role === role) el.classList.add('active');
+            });
+
+            const img = document.getElementById('mainRoleImg');
+            img.style.opacity = '0';
+            
+            setTimeout(() => {
+                img.src = roleData[role].img;
+                img.style.opacity = '1';
+                
+                const regRole = document.getElementById('regRole');
+                if (regRole) regRole.value = role;
+
+                const distField = document.getElementById('districtField');
+                if (distField) distField.style.display = (role === 'officer' && currentTab === 'register') ? 'block' : 'none';
+
+                updateFormHeader();
+            }, 150);
         }
 
-        function selectRole(el) {
-            document.querySelectorAll('.role-option').forEach(o => o.classList.remove('active'));
-            el.classList.add('active');
-            selectedRole = el.getAttribute('data-role');
+        function toggleMode(mode) {
+            currentTab = mode;
+            const regFields = document.getElementById('registerFields');
+            const btnText = document.getElementById('btnText');
+            const toggleText = document.getElementById('modeToggleText');
+            const distField = document.getElementById('districtField');
+            
+            if (mode === 'login') {
+                regFields.style.display = 'none';
+                if (distField) distField.style.display = 'none';
+                btnText.innerText = 'Log In to Portal';
+                toggleText.innerHTML = "New to the platform? <a href='#' onclick=\"toggleMode('register')\">Create Account</a>";
+            } else {
+                regFields.style.display = 'block';
+                if (distField && selectedRole === 'officer') distField.style.display = 'block';
+                btnText.innerText = 'Register Now';
+                toggleText.innerHTML = "Already a member? <a href='#' onclick=\"toggleMode('login')\">Sign In</a>";
+            }
+            updateFormHeader();
+        }
+
+        function updateFormHeader() {
+            const title = document.getElementById('formTitle');
+            const sub = document.getElementById('formSubtitle');
+            
+            if (currentTab === 'register') {
+                title.innerText = `Register as ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}`;
+                sub.innerText = `Join the Water-Guard network. ${roleData[selectedRole].desc}`;
+            } else {
+                title.innerText = `Sign In`;
+                sub.innerText = `Select your role and enter credentials. ${roleData[selectedRole].desc}`;
+            }
         }
 
         async function handleAuth(e) {
@@ -146,9 +447,16 @@
             const password = document.getElementById('password').value;
             const messageEl = document.getElementById('authMessage');
 
-            const endpoint = currentTab === 'login' ? '/login' : '/register';
             const body = { username, password };
-            if (currentTab === 'register') body.role = selectedRole;
+            if (currentTab === 'register') {
+                body.role = selectedRole;
+                body.full_name = document.getElementById('fullName').value;
+                if (selectedRole === 'officer') {
+                    body.district = document.getElementById('regDistrict').value;
+                }
+            }
+
+            const endpoint = currentTab === 'login' ? '/login' : '/register';
 
             try {
                 const response = await fetch(endpoint, {
@@ -159,24 +467,29 @@
 
                 const data = await response.json();
                 if (response.ok) {
-                    messageEl.style.color = 'var(--accent-green)';
-                    messageEl.innerText = data.message || 'Success!';
+                    messageEl.style.color = '#10b981';
+                    messageEl.innerText = 'Authentication successful! Redirecting...';
                     
                     localStorage.setItem('user_id', data.user_id);
-                    localStorage.setItem('username', data.username);
-                    localStorage.setItem('role', data.role);
+                    localStorage.setItem('role', data.role || selectedRole);
 
                     setTimeout(() => {
-                        window.location.href = (data.role === 'officer' || data.role === 'admin') ? 'officer.html' : 'citizen.html';
+                        const finalRole = data.role || selectedRole;
+                        if (finalRole === 'admin') window.location.href = 'admin.html';
+                        else if (finalRole === 'officer') window.location.href = 'officer.html';
+                        else window.location.href = 'citizen.html';
                     }, 1000);
                 } else {
-                    messageEl.style.color = 'var(--accent-danger)';
-                    messageEl.innerText = data.detail || 'Authentication failed';
+                    messageEl.style.color = '#ef4444';
+                    messageEl.innerText = data.detail || 'Invalid credentials or connection error.';
                 }
             } catch (err) {
-                messageEl.innerText = 'Error connecting to server';
+                messageEl.innerText = 'Critical: Server is not responding.';
+                messageEl.style.color = '#ef4444';
             }
         }
+
+        selectRole('officer');
     </script>
 </body>
 </html>

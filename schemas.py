@@ -2,21 +2,23 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
-# -------- User Schemas -------- #
 class UserCreate(BaseModel):
     username: str
     password: str
     role: str = "citizen"
+    full_name: Optional[str] = None
+    district: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: int
     username: str
     role: str
+    full_name: Optional[str] = None
+    district: Optional[str] = None
 
     class Config:
         from_attributes = True
 
-# -------- Complaint Schemas -------- #
 class ComplaintCreate(BaseModel):
     description: str
     location: str
@@ -35,3 +37,24 @@ class ComplaintResponse(BaseModel):
 
 class ComplaintUpdate(BaseModel):
     status: str
+
+class WaterBodyCreate(BaseModel):
+    body_id: str
+    name: str
+    water_type: str
+    district: str
+    area: str
+    boundary_geojson: str
+
+class WaterBodyResponse(BaseModel):
+    id: int
+    body_id: str
+    name: str
+    water_type: str
+    district: str
+    area: str
+    boundary_geojson: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

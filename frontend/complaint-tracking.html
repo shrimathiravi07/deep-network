@@ -7,28 +7,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="auth.js?v=2"></script>
 </head>
 <body class="dashboard-mode">
-    <!-- Navigation -->
-    <nav class="dashboard-nav">
-        <div class="nav-brand">
-            <i class="fas fa-shield-alt"></i>
-            <span>Water-Guard AI</span>
+    <header class="landing-header">
+        <div class="header-container">
+            <a href="index.html" class="logo-brand">
+                <div class="icon-ring-small text-white">
+                    <i class="fa-solid fa-water"></i>
+                </div>
+                <h1>Water-Guard AI</h1>
+            </a>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="about.html" class="nav-link">About</a>
+                <a href="history.html" class="nav-link">Historical Data</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+                <a href="login.html" class="nav-link login-btn">Login / Register</a>
+            </nav>
         </div>
-        <div class="nav-links">
-            <a href="citizen.html" class="nav-link">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <a href="complaint-tracking.html" class="nav-link active">
-                <i class="fas fa-search"></i> Track Complaint
-            </a>
-            <a href="#" class="nav-link" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </div>
-    </nav>
+    </header>
 
-    <!-- Main Content -->
     <main class="dashboard-main">
         <div class="dashboard-container">
             <div class="page-header">
@@ -36,7 +35,6 @@
                 <p>Track the status and progress of your water body encroachment complaints</p>
             </div>
 
-            <!-- Complaint Search -->
             <div class="glass-panel">
                 <div class="panel-header">
                     <h3><i class="fas fa-search"></i> Search Complaint</h3>
@@ -54,7 +52,6 @@
                 </div>
             </div>
 
-            <!-- Complaint Details -->
             <div id="complaintDetails" class="glass-panel" style="display: none;">
                 <div class="panel-header">
                     <h3><i class="fas fa-file-alt"></i> Complaint Details</h3>
@@ -79,7 +76,6 @@
                         </div>
                     </div>
 
-                    <!-- Status Timeline -->
                     <div class="status-timeline">
                         <h4>Status Timeline</h4>
                         <div class="timeline">
@@ -126,11 +122,9 @@
                         </div>
                     </div>
 
-                    <!-- Evidence Photos -->
                     <div class="evidence-section">
                         <h4>Evidence Photos</h4>
                         <div id="evidencePhotos" class="photo-grid">
-                            <!-- Photos will be loaded here -->
                         </div>
                     </div>
                 </div>
@@ -140,7 +134,6 @@
 
     <script src="script.js"></script>
     <script>
-        // Track complaint function
         async function trackComplaint() {
             const complaintId = document.getElementById('complaintId').value.trim();
             if (!complaintId) {
@@ -161,23 +154,18 @@
             }
         }
 
-        // Display complaint details
         function displayComplaintDetails(complaint) {
             document.getElementById('displayComplaintId').textContent = complaint.id;
             document.getElementById('displayWaterBodyId').textContent = complaint.waterBodyId;
             document.getElementById('displayOfficer').textContent = complaint.officerAssigned || 'Not assigned';
             document.getElementById('displaySubmittedDate').textContent = new Date(complaint.submittedDate).toLocaleDateString();
 
-            // Update timeline
             updateTimeline(complaint.status, complaint.timeline);
-
-            // Load evidence photos
             loadEvidencePhotos(complaint.evidencePhotos);
 
             document.getElementById('complaintDetails').style.display = 'block';
         }
 
-        // Update status timeline
         function updateTimeline(currentStatus, timeline) {
             const statusOrder = ['submitted', 'under-review', 'action-taken', 'resolved'];
             const currentIndex = statusOrder.indexOf(currentStatus);
@@ -190,7 +178,6 @@
                 }
             });
 
-            // Update dates if available
             if (timeline) {
                 document.getElementById('submittedDate').textContent = timeline.submitted ? new Date(timeline.submitted).toLocaleDateString() : '';
                 document.getElementById('reviewDate').textContent = timeline.underReview ? new Date(timeline.underReview).toLocaleDateString() : '';
@@ -199,7 +186,6 @@
             }
         }
 
-        // Load evidence photos
         function loadEvidencePhotos(photos) {
             const container = document.getElementById('evidencePhotos');
             container.innerHTML = '';
@@ -219,26 +205,14 @@
             });
         }
 
-        // Open photo modal
         function openPhotoModal(url) {
-            // Implement photo modal if needed
             window.open(url, '_blank');
         }
 
-        // Logout function
         function logout() {
-            localStorage.removeItem('user');
+            localStorage.clear();
             window.location.href = 'index.html';
         }
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (!user) {
-                window.location.href = 'login.html';
-            }
-        });
     </script>
 </body>
 </html>

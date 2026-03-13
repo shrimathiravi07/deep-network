@@ -1,19 +1,16 @@
 import psycopg2
 
 sql_commands = """
--- 1. Enable the spatial extension
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- 2. Create the Waterbodies table
 CREATE TABLE IF NOT EXISTS waterbodies (
     id SERIAL PRIMARY KEY,
     digital_id VARCHAR(50) UNIQUE,
     name VARCHAR(100),
     original_area_acres FLOAT,
-    boundary_geom GEOMETRY(Polygon, 4326) -- 4326 is the standard GPS format
+    boundary_geom GEOMETRY(Polygon, 4326) 
 );
 
--- 3. Insert initial data (ignore if already exists)
 INSERT INTO waterbodies (digital_id, name, original_area_acres, boundary_geom) VALUES
 ('TN-LAKE-001', 'Puzhal Lake', 4500, ST_GeomFromText('POLYGON((80.1 13.1, 80.2 13.1, 80.2 13.2, 80.1 13.2, 80.1 13.1))', 4326)),
 ('TN-LAKE-002', 'Chembarambakkam Lake', 6000, ST_GeomFromText('POLYGON((80.0 12.9, 80.1 12.9, 80.1 13.0, 80.0 13.0, 80.0 12.9))', 4326)),

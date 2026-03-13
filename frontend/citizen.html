@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="auth.js?v=2"></script>
 </head>
 <body class="dashboard-mode">
     <div class="dashboard-layout">
@@ -18,27 +19,26 @@
             </div>
             
             <nav class="sidebar-nav">
-                <a href="#" class="sidebar-link active" onclick="showSection('report')">
+                <a href="#" class="sidebar-link active" onclick="showSection('report', event)">
                     <i class="fa-solid fa-plus-circle"></i> Report Encroachment
                 </a>
-                <a href="#" class="sidebar-link" onclick="showSection('my-complaints')">
+                <a href="#" class="sidebar-link" onclick="showSection('my-complaints', event)">
                     <i class="fa-solid fa-list-check"></i> My Complaints
                 </a>
-                <a href="#" class="sidebar-link" onclick="showSection('map-view')">
+                <a href="#" class="sidebar-link" onclick="showSection('map-view', event)">
                     <i class="fa-solid fa-map-location-dot"></i> Nearby Water Bodies
                 </a>
-                <a href="#" class="sidebar-link" onclick="showSection('alerts')">
+                <a href="#" class="sidebar-link" onclick="showSection('alerts', event)">
                     <i class="fa-solid fa-bell"></i> Alerts & Notifications
                 </a>
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;">
-                <a href="index.html" class="sidebar-link" style="color: var(--accent-danger);">
+                <a href="#" class="sidebar-link" style="color: var(--accent-danger);" onclick="logoutUser(event);">
                     <i class="fa-solid fa-sign-out-alt"></i> Logout
                 </a>
             </nav>
         </aside>
 
         <main style="padding: 2.5rem; overflow-y: auto; background: #0B1218;">
-            <!-- REPORT SECTION -->
             <div id="report-section" class="dash-section">
                 <div class="section-header" style="margin-bottom: 2rem;">
                     <h2>Report New Encroachment</h2>
@@ -53,7 +53,12 @@
                         </div>
                         <div class="control-group">
                             <label><i class="fa-solid fa-location-dot"></i> GPS Location</label>
-                            <input type="text" id="locationInput" readonly placeholder="Click map to set coordinates">
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="locationInput" readonly placeholder="Click map or use live button" style="flex: 1;">
+                                <button class="btn btn-secondary" onclick="useLiveLocation()" title="Detect Current Location" style="padding: 10px; min-width: 45px;">
+                                    <i class="fa-solid fa-location-crosshairs"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="control-group">
                             <label><i class="fa-solid fa-pen-nib"></i> Description</label>
@@ -70,7 +75,6 @@
                 </div>
             </div>
 
-            <!-- MY COMPLAINTS SECTION -->
             <div id="my-complaints-section" class="dash-section" style="display: none;">
                 <div class="section-header" style="margin-bottom: 2rem;">
                     <h2>My Submitted Reports</h2>
@@ -88,13 +92,11 @@
                             </tr>
                         </thead>
                         <tbody id="complaintsTableBody">
-                            <!-- Rows will be injected here -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- NEARBY WATER BODIES SECTION -->
             <div id="map-view-section" class="dash-section" style="display: none;">
                  <div class="section-header" style="margin-bottom: 2rem;">
                     <h2>Nearby Protected Water Bodies</h2>
@@ -105,14 +107,12 @@
                 </div>
             </div>
 
-            <!-- ALERTS SECTION -->
             <div id="alerts-section" class="dash-section" style="display: none;">
                 <div class="section-header" style="margin-bottom: 2rem;">
                     <h2>System Alerts & Regional Feed</h2>
                     <p style="color: var(--text-secondary);">Stay updated on local water encroachment activities.</p>
                 </div>
                 <div id="alertsFeed" style="display: grid; gap: 1rem;">
-                    <!-- Alert cards will be injected here -->
                     <div class="glass-card" style="border-left: 4px solid var(--accent-blue);">
                         <h4><i class="fa-solid fa-circle-info accent-blue"></i> Welcome to Water-Guard</h4>
                         <p>Thank you for contributing to water body protection. Your reports help us detect illegal construction faster.</p>
@@ -124,10 +124,8 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        const userId = localStorage.getItem('user_id');
-        if (!userId) window.location.href = 'login.html';
-
         let citizenMap, marker;
+        const userId = localStorage.getItem('user_id');
         
         function initMaps() {
             citizenMap = L.map('citizen-map').setView([13.0827, 80.2707], 12);
@@ -135,18 +133,54 @@
 
             citizenMap.on('click', (e) => {
                 const { lat, lng } = e.latlng;
-                if (marker) marker.remove();
-                marker = L.marker([lat, lng]).addTo(citizenMap);
-                document.getElementById('locationInput').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                updateLocation(lat, lng);
             });
         }
 
-        function showSection(section) {
-            document.querySelectorAll('.dash-section').forEach(s => s.style.display = 'none');
-            document.getElementById(section + '-section').style.display = 'block';
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            event.target.closest('.sidebar-link').classList.add('active');
+        function updateLocation(lat, lng) {
+            if (marker) marker.remove();
+            marker = L.marker([lat, lng]).addTo(citizenMap);
+            document.getElementById('locationInput').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            citizenMap.setView([lat, lng], 15);
+        }
 
+        function useLiveLocation() {
+            const statusEl = document.getElementById('submitStatus');
+            if (navigator.geolocation) {
+                statusEl.innerText = "Detecting live location...";
+                statusEl.style.color = "var(--accent-blue)";
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        updateLocation(latitude, longitude);
+                        statusEl.innerText = "Location detected!";
+                        statusEl.style.color = "var(--accent-green)";
+                        setTimeout(() => statusEl.innerText = "", 2000);
+                    },
+                    (error) => {
+                        statusEl.innerText = "Error: Geolocation denied or unavailable.";
+                        statusEl.style.color = "var(--accent-danger)";
+                    }
+                );
+            } else {
+                statusEl.innerText = "Error: Your browser does not support geolocation.";
+                statusEl.style.color = "var(--accent-danger)";
+            }
+        }
+
+        function showSection(section, event) {
+            document.querySelectorAll('.dash-section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(section + '-section');
+            if (target) target.style.display = 'block';
+            
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+
+            console.log("Current User ID:", userId);
+            
             if (section === 'my-complaints') fetchComplaints();
             if (section === 'map-view') {
                 setTimeout(() => {
@@ -168,6 +202,12 @@
                 return;
             }
 
+            if (!userId) {
+                statusEl.innerText = "Error: User identity lost. Please log in again.";
+                statusEl.style.color = 'var(--accent-danger)';
+                return;
+            }
+
             const formData = new FormData();
             formData.append('description', description);
             formData.append('location', location);
@@ -175,14 +215,22 @@
             formData.append('file', file);
 
             try {
+                statusEl.innerText = "Processing report...";
+                statusEl.style.color = "var(--accent-blue)";
+                
                 const response = await fetch('/complaints', { method: 'POST', body: formData });
                 if (response.ok) {
                     statusEl.innerText = "Complaint submitted successfully!";
                     statusEl.style.color = 'var(--accent-green)';
                     setTimeout(() => showSection('my-complaints'), 1500);
+                } else {
+                    const error = await response.json();
+                    statusEl.innerText = `Error: ${error.detail || "Upload failed"}`;
+                    statusEl.style.color = 'var(--accent-danger)';
                 }
             } catch (err) {
-                statusEl.innerText = "Error submitting complaint.";
+                statusEl.innerText = "Network error: Target server is unreachable.";
+                statusEl.style.color = 'var(--accent-danger)';
             }
         }
 

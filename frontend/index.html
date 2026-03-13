@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="auth.js?v=2"></script>
 </head>
 <body class="landing-mode">
     <header class="landing-header">
@@ -19,6 +20,7 @@
                 <h1>Water-Guard AI</h1>
             </a>
             <nav class="header-nav">
+                <a href="index.html" class="nav-link">Home</a>
                 <a href="about.html" class="nav-link">About</a>
                 <a href="history.html" class="nav-link">Historical Data</a>
                 <a href="contact.html" class="nav-link">Contact</a>
@@ -54,15 +56,15 @@
         <section id="stats">
             <div class="stats-grid">
                 <div class="glass-card stat-card">
-                    <span class="stat-number">1,245</span>
+                    <span class="stat-number" id="totalWaterBodies">5</span>
                     <span class="stat-label">Water Bodies Monitored</span>
                 </div>
                 <div class="glass-card stat-card">
-                    <span class="stat-number">8,392</span>
+                    <span class="stat-number" id="totalComplaints">0</span>
                     <span class="stat-label">Complaints Registered</span>
                 </div>
                 <div class="glass-card stat-card">
-                    <span class="stat-number">3,156</span>
+                    <span class="stat-number" id="resolvedCases">0</span>
                     <span class="stat-label">Encroachments Resolved</span>
                 </div>
             </div>
@@ -76,18 +78,18 @@
             <div class="mission-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
                 <div class="glass-card">
                     <i class="fa-solid fa-droplet" style="color: var(--accent-blue); font-size: 2rem;"></i>
-                    <h4 style="margin: 1rem 0;">Freshwater Availability</h4>
-                    <p>Ensuring clean water for future generations by protecting natural reservoirs.</p>
+                    <h4 style="margin: 1rem 0;">Protecting Natural Water Resources</h4>
+                    <p>Lakes, ponds, and rivers are essential sources of freshwater for communities. Protecting these water bodies ensures sustainable water availability for drinking, agriculture, and future generations.</p>
                 </div>
                 <div class="glass-card">
                     <i class="fa-solid fa-leaf" style="color: var(--accent-green); font-size: 2rem;"></i>
-                    <h4 style="margin: 1rem 0;">Ecosystem Balance</h4>
-                    <p>Maintaining biological diversity and climate regulation through healthy water bodies.</p>
+                    <h4 style="margin: 1rem 0;">Preventing Encroachments</h4>
+                    <p>Illegal constructions and land grabbing around water bodies reduce their size and disrupt natural water flow. Monitoring and preventing encroachments helps preserve the original boundaries and ecological importance of these resources.</p>
                 </div>
                 <div class="glass-card">
                     <i class="fa-solid fa-house-flood-water" style="color: var(--accent-danger); font-size: 2rem;"></i>
-                    <h4 style="margin: 1rem 0;">Flood Prevention</h4>
-                    <p>Preventing urban disasters by preserving natural drainage and catchment areas.</p>
+                    <h4 style="margin: 1rem 0;">Enabling Smart Monitoring</h4>
+                    <p>Digital technologies such as mapping, satellite monitoring, and citizen reporting allow authorities to track water body conditions in real time. This improves transparency, faster response to encroachments, and effective conservation.</p>
                 </div>
             </div>
         </section>

@@ -4,8 +4,6 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.sql import func
 import os
 
-# PostgreSQL database connection (replace with your credentials)
-# Format: postgresql://username:password@host:port/database_name
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:2801@localhost:5432/waterguard"
 
 engine = create_engine(
@@ -20,8 +18,10 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    password = Column(String)  # Note: For production, hash the passwords
-    role = Column(String, default="citizen") # Roles can be 'citizen' or 'officer'
+    password = Column(String)  
+    role = Column(String, default="citizen") 
+    full_name = Column(String, nullable=True)
+    district = Column(String, nullable=True)
     
     complaints = relationship("Complaint", back_populates="owner")
 
@@ -32,12 +32,23 @@ class Complaint(Base):
     id = Column(Integer, primary_key=True, index=True)
     description = Column(Text, nullable=True)
     location = Column(String)
-    image_path = Column(String, nullable=True) # Path to the uploaded photo
-    status = Column(String, default="pending") # pending, investigating, resolved
+    image_path = Column(String, nullable=True) 
+    status = Column(String, default="pending") 
     user_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     owner = relationship("User", back_populates="complaints")
 
-# Create tables if they do not exist
+class WaterBody(Base):
+    __tablename__ = "water_bodies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    body_id = Column(String, unique=True, index=True) 
+    name = Column(String)
+    water_type = Column(String) 
+    district = Column(String)
+    area = Column(String) 
+    boundary_geojson = Column(Text) 
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 Base.metadata.create_all(bind=engine)

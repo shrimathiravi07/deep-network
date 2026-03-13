@@ -4,126 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water-Guard AI | Historical Data Comparison</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <script src="auth.js?v=2"></script>
     <style>
         .history-page {
             width: 100%;
             min-height: 100vh;
-            background: var(--bg-dark);
-            overflow: hidden;
+            background: #0B1218;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            color: #fff;
         }
-
-        .header-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            z-index: 100;
-        }
-
         .history-main {
             flex: 1;
-            position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 2rem;
+            padding: 4rem 2rem;
         }
-
         .history-title-box {
             text-align: center;
-            margin-bottom: 2rem;
-            z-index: 10;
+            margin-bottom: 4rem;
         }
-
         .history-title-box h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(to right, #ffffff, var(--accent-blue));
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #3b82f6);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
-
         .history-title-box p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
         }
-
-        /* Split Screen Comparision Container */
         .comparison-container {
             position: relative;
             width: 100%;
-            max-width: 1000px;
-            height: 60vh;
-            min-height: 400px;
-            border-radius: 16px;
+            max-width: 1100px;
+            height: 70vh;
+            border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #000;
         }
-
-        /* Background image (Modern - Color) */
-        .img-modern {
+        .img-layer {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('assets/compare.png') center/cover no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
-
-        /* Foreground image (Vintage - Grayscale overlay) */
+        .img-modern {
+            z-index: 1;
+        }
         .img-vintage {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%; /* Starting width for slider */
-            height: 100%;
-            background: url('assets/compare.png') center/cover no-repeat;
-            filter: grayscale(100%) brightness(0.7) contrast(1.2); /* Vintage look */
-            overflow: hidden;
-            border-right: 3px solid var(--accent-blue);
+            z-index: 2;
+            width: 50%; 
+            border-right: 4px solid #3b82f6;
+            filter: grayscale(100%) brightness(0.8) sepia(0.2);
+            box-shadow: 15px 0 50px rgba(0,0,0,0.6);
         }
-
-        /* Slider Handle */
-        .slider-handle {
+        .handle {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            background: var(--accent-blue);
-            color: white;
-            border: 3px solid white;
+            width: 54px;
+            height: 54px;
+            background: #3b82f6;
+            border: 4px solid #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-            font-size: 1.2rem;
+            color: #fff;
+            font-size: 1.4rem;
+            z-index: 100;
             cursor: ew-resize;
-            z-index: 10;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+            transition: transform 0.2s;
         }
-
-        /* Range Input overlay (Invisible, handles drag logic natively) */
+        .handle:hover { transform: translate(-50%, -50%) scale(1.1); }
         .slider-input {
             position: absolute;
             top: 0;
@@ -132,81 +104,66 @@
             height: 100%;
             opacity: 0;
             cursor: ew-resize;
-            z-index: 20;
+            z-index: 110;
         }
-
-        /* Labels */
-        .label {
+        .overlay-label {
             position: absolute;
-            top: 20px;
-            padding: 8px 16px;
-            background: rgba(11, 18, 24, 0.8);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: white;
-            z-index: 5;
-            border: 1px solid rgba(255,255,255,0.2);
-            pointer-events: none;
-        }
-
-        .label-left {
-            left: 20px;
-        }
-
-        .label-right {
-            right: 20px;
-        }
-
-        /* Live GPS Coordinates */
-        .live-feed {
-            position: absolute;
-            font-family: monospace;
-            color: var(--accent-success);
+            top: 30px;
+            padding: 12px 24px;
+            background: rgba(11, 18, 24, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
             font-size: 0.85rem;
-            text-shadow: 0 0 5px var(--accent-success);
-            z-index: 15;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 50;
             pointer-events: none;
-            opacity: 0.8;
-            animation: flicker 4s infinite alternate;
         }
-
-        .gps-top-left { top: 15px; left: 15px; }
-        .gps-bottom-right { bottom: 15px; right: 15px; }
-        
-        @keyframes flicker {
-            0% { opacity: 0.8; }
-            5% { opacity: 0.2; }
-            10% { opacity: 0.9; }
-            50% { opacity: 1; text-shadow: 0 0 10px var(--accent-success); }
-            100% { opacity: 0.7; }
-        }
-
-        .unet-overlay {
+        .label-before { left: 30px; }
+        .label-after { right: 30px; }
+        .hud-data {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 70% 60%, rgba(255, 77, 77, 0.4) 0%, transparent 20%),
-                        radial-gradient(circle at 40% 70%, rgba(255, 77, 77, 0.5) 0%, transparent 15%);
-            z-index: 2;
+            bottom: 30px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #10b981;
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 50;
+            pointer-events: none;
+            line-height: 1.4;
         }
-
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(59, 130, 246, 0.1);
+            z-index: 1000;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
     </style>
 </head>
 <body>
+    <div class="scanline"></div>
     <div class="history-page">
-        <!-- Navigation Header -->
         <header class="landing-header">
             <div class="header-container">
                 <a href="index.html" class="logo-brand">
-                    <div class="icon-ring-small">
-                        <i class="fa-solid fa-water"></i>
-                    </div>
+                    <div class="icon-ring-small"><i class="fa-solid fa-water"></i></div>
                     <h1>Water-Guard AI</h1>
                 </a>
                 <nav class="header-nav">
                     <a href="index.html" class="nav-link">Home</a>
                     <a href="about.html" class="nav-link">About</a>
+                    <a href="history.html" class="nav-link">Historical Data</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
                     <a href="login.html" class="nav-link login-btn">Login / Register</a>
                 </nav>
             </div>
@@ -215,68 +172,41 @@
         <main class="history-main">
             <div class="history-title-box">
                 <h2>Historical Evidence & Tracking</h2>
-                <p>Drag the slider to compare the year 2000 satellite view with current modern satellite imagery.</p>
+                <p>Interactive temporal analysis. Drag the central handle to reveal the impact of urban density on local water ecosystems over two decades.</p>
             </div>
 
             <div class="comparison-container">
+                <div class="img-layer img-modern" style="background-image: url('/assets/compare.png');"></div>
+                <div class="overlay-label label-after">Present Day (U-Net AI Detect)</div>
                 
-                <!-- Right Side - Modern Image -->
-                <div class="img-modern">
-                </div>
-                <!-- Div text strictly kept relative to the parent container so it doesn't get masked by the left side width cut -->
-                <div class="label label-right">Present Day (U-Net Overlay)</div>
+                <div class="img-layer img-vintage" id="vintageLayer" style="background-image: url('/assets/compare.png');"></div>
+                <div class="overlay-label label-before">Year 2005 (Survey Phase)</div>
 
-                <!-- Left Side - Vintage Image (Clipped by width dynamically) -->
-                <div class="img-vintage" id="vintageImage"></div>
-                
-                <div class="label label-left" id="vintageLabel" style="z-index: 10;">Year 2010 (Clear Waterbody)</div>
-
-                <!-- Live GPS Feed Data -->
-                <div class="live-feed gps-top-left">
-                    LAT: 13.0827° N<br>
-                    LNG: 80.2707° E<br>
-                    ELEV: 6M MSL
-                </div>
-                <div class="live-feed gps-bottom-right" style="text-align: right;">
-                    SYS: TN-LAKE-01<br>
-                    SAT: ESA SENTINEL-2
+                <div class="hud-data" style="left: 30px;">
+                    REGION: CHENNAI_NORTH<br>
+                    TARGET: KORATTUR_LAKE<br>
+                    COORD: 13.1167°N, 80.1833°E
                 </div>
 
-                <!-- Center Handle Graphic -->
-                <div class="slider-handle" id="sliderHandle">
-                    <i class="fa-solid fa-arrows-left-right"></i>
-                </div>
-
-                <!-- Real Invisible Range Slider overlay -->
+                <div class="handle" id="sliderHandle"><i class="fa-solid fa-arrows-left-right"></i></div>
                 <input type="range" class="slider-input" id="sliderInput" min="0" max="100" value="50">
             </div>
-
         </main>
     </div>
 
     <script>
         const sliderInput = document.getElementById('sliderInput');
-        const vintageImage = document.getElementById('vintageImage');
+        const vintageLayer = document.getElementById('vintageLayer');
         const sliderHandle = document.getElementById('sliderHandle');
-        const vintageLabel = document.getElementById('vintageLabel');
 
-        function updateSlider() {
+        sliderInput.addEventListener('input', () => {
             const val = sliderInput.value;
-            vintageImage.style.width = val + '%';
+            vintageLayer.style.width = val + '%';
             sliderHandle.style.left = val + '%';
-            
-            // Optionally fade the left label if the slider goes over it
-            if (val < 15) {
-                vintageLabel.style.opacity = 0;
-            } else {
-                vintageLabel.style.opacity = 1;
-            }
-        }
+        });
 
-        sliderInput.addEventListener('input', updateSlider);
-        
-        // Init
-        updateSlider();
+        vintageLayer.style.width = '50%';
+        sliderHandle.style.left = '50%';
     </script>
 </body>
 </html>

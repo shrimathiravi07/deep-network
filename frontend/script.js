@@ -1,30 +1,31 @@
-// Initialize Leaflet Map
-// Using a beautiful Dark Theme basemap from CartoDB
-const map = L.map('map', {
-    zoomControl: false // Customizing zoom position
-}).setView([13.0827, 80.2707], 12);
+let map, currentMarker = null;
 
-L.control.zoom({
-    position: 'bottomright'
-}).addTo(map);
+function initDashboardMap() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement || mapElement._leaflet_id) return;
 
-// Add Dark Matter Base Map
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; CartoDB',
-    subdomains: 'abcd',
-    maxZoom: 19
-}).addTo(map);
+    map = L.map(mapElement, {
+        zoomControl: false 
+    }).setView([13.0827, 80.2707], 12);
 
-// Variables for Map markers
-let currentMarker = null;
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// Image Upload UI Interaction
-const fileInput = document.getElementById('imageUpload');
-const fileWrapper = document.querySelector('.file-upload-wrapper');
-const fileIcon = fileWrapper.querySelector('i');
-const fileText = fileWrapper.querySelector('span');
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+}
 
-fileInput.addEventListener('change', function(e) {
+function initFileUpload() {
+    const fileInput = document.getElementById('imageUpload');
+    const fileWrapper = document.querySelector('.file-upload-wrapper');
+    if (!fileInput || !fileWrapper) return;
+    
+    const fileIcon = fileWrapper.querySelector('i');
+    const fileText = fileWrapper.querySelector('span');
+
+    fileInput.addEventListener('change', function(e) {
     if (this.files && this.files.length > 0) {
         fileIcon.className = 'fa-solid fa-check-circle';
         fileIcon.style.color = '#10b981';
@@ -38,7 +39,6 @@ fileInput.addEventListener('change', function(e) {
     }
 });
 
-// Drag and drop cosmetics
 fileWrapper.addEventListener('dragover', (e) => {
     e.preventDefault();
     fileWrapper.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
@@ -58,13 +58,13 @@ fileWrapper.addEventListener('drop', (e) => {
         fileInput.dispatchEvent(newEvent);
     }
 });
+}
 
-// Upload and Analyze Data
 async function uploadData() {
     const id = document.getElementById('waterID').value.trim();
+    const fileInput = document.getElementById('imageUpload'); 
     const file = fileInput.files[0];
     
-    // Elements
     const resultContainer = document.getElementById('result-container');
     const spinner = document.getElementById('loading-spinner');
     const content = document.getElementById('result-content');
@@ -75,26 +75,21 @@ async function uploadData() {
         return;
     }
 
-    // UI Loading State
     resultContainer.classList.remove('hidden');
     spinner.classList.remove('hidden');
     content.innerHTML = '';
     
-    // Change Button State
     const originalBtnHTML = analyzeBtnDiv.innerHTML;
     analyzeBtnDiv.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
     analyzeBtnDiv.style.opacity = '0.7';
     analyzeBtnDiv.disabled = true;
 
-    // Simulate Network / Preparation (remove if real endpoints are blazing fast)
-    // Wait slightly for UI to transition smoothly
     await new Promise(r => setTimeout(r, 600));
 
     try {
         const formData = new FormData();
         formData.append("file", file);
 
-        // Making real API call to the FastAPI Backend
         const res = await fetch(`/predict`, { 
             method: 'POST', 
             body: formData 
@@ -104,24 +99,20 @@ async function uploadData() {
 
         const data = await res.json();
         
-        // Hide Spinner, Show Result UI
         spinner.classList.add('hidden');
         
         let severity = "Safe";
-        let severityColor = "#10b981"; // green
+        let severityColor = "#10b981"; 
         let pixels = data.water_pixels;
         
-        // Encroachment visual logic based on arbitrary threshold 
-        // Note: Change 5000 based on actual output sizes
         if (pixels < 1000) {
             severity = "Critical Danger";
-            severityColor = "#ef4444"; // red
+            severityColor = "#ef4444"; 
         } else if (pixels < 5000) {
             severity = "Moderate Warning";
-            severityColor = "#f59e0b"; // orange
+            severityColor = "#f59e0b"; 
         }
 
-        // Render sleek result markup
         content.innerHTML = `
             <div class="result-header" style="color: ${severityColor}">
                 <i class="fa-solid fa-shield-halved"></i> Analysis Complete
@@ -145,12 +136,10 @@ async function uploadData() {
             </div>
         `;
 
-        // Add a pulsing marker to the map (Simulated Location for Visual)
         if (currentMarker) {
             map.removeLayer(currentMarker);
         }
         
-        // Custom interactive marker icon
         const pinIcon = L.divIcon({
             className: 'custom-pin',
             html: `<i class="fa-solid fa-location-dot fa-2x" style="color: ${severityColor}; filter: drop-shadow(0 0 10px ${severityColor});"></i>`,
@@ -158,20 +147,17 @@ async function uploadData() {
             iconAnchor: [15, 42]
         });
 
-        // Add to abstract point on map (Chennai Area offset)
         const lat = 13.0827 + (Math.random() - 0.5) * 0.1;
         const lng = 80.2707 + (Math.random() - 0.5) * 0.1;
 
         currentMarker = L.marker([lat, lng], {icon: pinIcon}).addTo(map);
         
-        // Smoothly fly to the detected region
         map.flyTo([lat, lng], 14, {
             duration: 1.5,
             easeLinearity: 0.25
         });
 
     } catch (error) {
-        // Handle Error beautifully
         spinner.classList.add('hidden');
         content.innerHTML = `
             <div class="result-header" style="color: #ef4444">
@@ -188,16 +174,12 @@ async function uploadData() {
     }
 }
 
-// ========== LANDING PAGE FUNCTIONALITY ==========
-
-// Initialize Landing Page Map
 function initializeLandingMap() {
     const landingMapElement = document.getElementById('landing-map');
     
-    // Only initialize if landing map exists
-    if (!landingMapElement) return;
+    if (!landingMapElement || landingMapElement._leaflet_id) return;
 
-    const landingMap = L.map('landing-map', {
+    const landingMap = L.map(landingMapElement, {
         zoomControl: false
     }).setView([13.0827, 80.2707], 11);
 
@@ -205,14 +187,12 @@ function initializeLandingMap() {
         position: 'bottomright'
     }).addTo(landingMap);
 
-    // Add Dark Matter Base Map
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; CartoDB',
         subdomains: 'abcd',
         maxZoom: 19
     }).addTo(landingMap);
 
-    // Sample Water Body Data
     const waterBodies = [
         {
             name: 'Chembarambakkam Lake',
@@ -270,7 +250,6 @@ function initializeLandingMap() {
         }
     ];
 
-    // Add markers for each water body
     waterBodies.forEach(waterbody => {
         const iconColor = waterbody.color;
         
@@ -297,7 +276,6 @@ function initializeLandingMap() {
             icon: waterIcon
         }).addTo(landingMap);
 
-        // Popup with information
         const popupContent = `
             <div style="
                 color: #f8fafc;
@@ -354,77 +332,82 @@ function initializeLandingMap() {
         `;
 
         marker.bindPopup(popupContent);
-
-        // Add hover effect
-        marker.on('mouseover', function() {
-            this.openPopup();
-        });
     });
 }
 
-// Navigate to map functionality
 function navigateToMap() {
-    // Scroll to map preview section
     const mapSection = document.querySelector('.map-preview-section');
     if (mapSection) {
         mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
 
-// Stats counter animation
-function animateStats() {
-    const animate = (element, target) => {
-        let current = 0;
-        const increment = target / 50;
-        const interval = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-                element.textContent = target.toLocaleString();
-                clearInterval(interval);
-            } else {
-                element.textContent = Math.floor(current).toLocaleString();
-            }
-        }, 30);
-    };
+async function fetchAndAnimateStats() {
+    try {
+        const response = await fetch('/stats');
+        const data = await response.json();
+        
+        const waterBodiesEl = document.getElementById('totalWaterBodies');
+        const complaintsEl = document.getElementById('totalComplaints');
+        const resolvedEl = document.getElementById('resolvedCases');
 
-    const waterBodiesEl = document.getElementById('stat-water-bodies');
-    const complaintsEl = document.getElementById('stat-complaints');
-    const resolvedEl = document.getElementById('stat-resolved');
-    const citizensEl = document.getElementById('stat-citizens');
+        const animate = (element, target) => {
+            if (!element) return;
+            let current = 0;
+            const increment = Math.max(1, target / 50);
+            const interval = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = Math.round(target).toLocaleString();
+                    clearInterval(interval);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 30);
+        };
 
-    if (waterBodiesEl) animate(waterBodiesEl, 1245);
-    if (complaintsEl) animate(complaintsEl, 8392);
-    if (resolvedEl) animate(resolvedEl, 3156);
-    if (citizensEl) animate(citizensEl, 45230);
+        if (waterBodiesEl) animate(waterBodiesEl, data.total_water_bodies);
+        if (complaintsEl) animate(complaintsEl, data.total_complaints);
+        if (resolvedEl) animate(resolvedEl, data.resolved_cases);
+        
+    } catch (error) {
+        console.error('Error fetching dynamic stats:', error);
+    }
 }
 
-// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on the landing page
-    if (document.querySelector('.landing-page')) {
-        document.body.classList.add('landing-mode');
+    if (typeof L === 'undefined') {
+        console.error('Leaflet.js not loaded. Please check your internet connection or script tags.');
+        return;
+    }
+
+    if (document.body.classList.contains('landing-mode')) {
+        setTimeout(() => {
+            if (document.getElementById('landing-map')) {
+                initializeLandingMap();
+            }
+        }, 100);
         
-        // Initialize landing map
-        initializeLandingMap();
-        
-        // Animate stats when they come into view
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    animateStats();
+                    fetchAndAnimateStats();
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.5 });
+        }, { threshold: 0.1 });
 
-        const statsSection = document.querySelector('.stats-section');
+        const statsSection = document.getElementById('stats');
         if (statsSection) {
             observer.observe(statsSection);
         }
     }
-    // Dashboard initialization (existing code will still work)
-    else if (document.getElementById('map')) {
+    
+    if (document.getElementById('map')) {
         document.body.classList.add('dashboard-mode');
-        // Map is already initialized at the top of the script
+        setTimeout(() => {
+            initDashboardMap();
+            initFileUpload();
+        }, 100);
     }
 });

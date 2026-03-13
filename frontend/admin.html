@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="auth.js?v=2"></script>
 </head>
 <body class="dashboard-mode">
     <div class="dashboard-layout">
@@ -29,7 +30,7 @@
                     <i class="fa-solid fa-chart-pie"></i> Analytics Dashboard
                 </a>
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;">
-                <a href="index.html" class="sidebar-link" style="color: var(--accent-danger);">
+                <a href="#" class="sidebar-link" style="color: var(--accent-danger);" onclick="logoutUser(event);">
                     <i class="fa-solid fa-sign-out-alt"></i> Logout
                 </a>
             </nav>
@@ -42,22 +43,56 @@
                     <p style="color: var(--text-secondary);">Draw polygon boundaries to register new protected water bodies (Digital Passport Mapping).</p>
                 </div>
                 
-                <div class="glass-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <div class="form-container">
-                        <div class="control-group">
-                            <label>Internal Waterbody ID</label>
-                            <input type="text" placeholder="e.g. TN-CHE-LK01">
+                <div class="glass-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; min-height: 500px; align-items: stretch;">
+                    <div class="form-container" style="display: flex; flex-direction: column; justify-content: flex-start; gap: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="control-group">
+                                <label>Water Body ID</label>
+                                <input type="text" id="bodyId" placeholder="" onchange="focusOnDistrict(this.value)">
+                            </div>
+                            <div class="control-group">
+                                <label>Name</label>
+                                <input type="text" id="bodyName" placeholder="">
+                            </div>
                         </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="control-group">
+                                <label>Type</label>
+                                <select id="bodyType" style="width: 100%; padding: 14px; background: #0B1218; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; outline: none;">
+                                    <option value="Lake">Lake</option>
+                                    <option value="Pond">Pond</option>
+                                    <option value="River">River</option>
+                                    <option value="Reservoir">Reservoir</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>District / City</label>
+                                <input type="text" id="bodyDistrict" placeholder="">
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Original Area (Acres)</label>
+                            <input type="text" id="bodyArea" placeholder="">
+                        </div>
+
                         <div class="control-group">
                             <label>Boundary Data (GeoJSON)</label>
-                            <textarea id="polygonData" rows="6" readonly placeholder="Draw on map to generate data..."></textarea>
+                            <textarea id="polygonData" rows="3" readonly placeholder="Tracing data will appear here..."></textarea>
                         </div>
-                        <button class="btn btn-primary" style="width: 100%; justify-content: center;">
-                            <i class="fa-solid fa-save"></i> Register Boundary
-                        </button>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 0.5rem;">
+                            <button class="btn btn-secondary" style="flex: 1;" onclick="clearDrawing()">
+                                <i class="fa-solid fa-eraser"></i> Clear
+                            </button>
+                            <button class="btn btn-primary" style="flex: 2; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);" onclick="registerBoundary()">
+                                <i class="fa-solid fa-save"></i> Save Data
+                            </button>
+                        </div>
                     </div>
-                    <div class="map-container" style="height: 100%;">
-                        <div id="admin-map" style="width: 100%; height: 100%;"></div>
+                    <div class="map-container" style="min-height: 450px; border-radius: 12px; overflow: hidden;">
+                        <div id="admin-map" style="width: 100%; height: 100%; min-height: 450px;"></div>
                     </div>
                 </div>
             </div>
@@ -77,19 +112,7 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Officer Rajesh</td>
-                                <td>Chennai Central</td>
-                                <td>14</td>
-                                <td><span class="badge badge-resolved">Active</span></td>
-                            </tr>
-                            <tr>
-                                <td>Officer Priya</td>
-                                <td>Kanchipuram</td>
-                                <td>8</td>
-                                <td><span class="badge badge-resolved">Active</span></td>
-                            </tr>
+                        <tbody id="officer-table-body">
                         </tbody>
                     </table>
                 </div>
@@ -105,6 +128,26 @@
             document.getElementById(s + '-sub').style.display = 'block';
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             event.target.closest('.sidebar-link').classList.add('active');
+            if (s === 'officers') loadOfficers();
+        }
+
+        async function loadOfficers() {
+            try {
+                const res = await fetch('/officers');
+                const officers = await res.json();
+                const tbody = document.getElementById('officer-table-body');
+                tbody.innerHTML = officers.map(o => `
+                    <tr>
+                        <td>${o.full_name}</td>
+                        <td>${o.district}</td>
+                        <td>${o.active_cases}</td>
+                        <td><span class="badge badge-resolved">${o.status}</span></td>
+                    </tr>
+                `).join('');
+                if (officers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No officers found in database.</td></tr>';
+                }
+            } catch (err) { console.error("Could not load officers:", err); }
         }
 
         let map = L.map('admin-map').setView([13.0827, 80.2707], 12);
@@ -123,6 +166,129 @@
             drawnItems.addLayer(layer);
             document.getElementById('polygonData').value = JSON.stringify(layer.toGeoJSON());
         });
+
+        function clearDrawing() {
+            drawnItems.clearLayers();
+            document.getElementById('polygonData').value = "";
+            document.getElementById('bodyId').value = "";
+            document.getElementById('bodyName').value = "";
+            document.getElementById('bodyDistrict').value = "";
+            document.getElementById('bodyArea').value = "";
+        }
+
+        function focusOnDistrict(id) {
+            const upperId = id.toUpperCase();
+            if (upperId.includes('CHE')) map.flyTo([13.0827, 80.2707], 13);
+            else if (upperId.includes('KAN')) map.flyTo([12.8342, 79.7036], 13);
+            else if (upperId.includes('MAD')) map.flyTo([9.9252, 78.1198], 13);
+        }
+
+        async function registerBoundary() {
+            const bodyId = document.getElementById('bodyId').value;
+            const bodyName = document.getElementById('bodyName').value;
+            const bodyType = document.getElementById('bodyType').value;
+            const bodyDistrict = document.getElementById('bodyDistrict').value;
+            const bodyArea = document.getElementById('bodyArea').value;
+            const geojson = document.getElementById('polygonData').value;
+            const btn = event.currentTarget;
+
+            if (!bodyId || !bodyName || !bodyDistrict || !geojson) {
+                alert("Please fill all required fields and draw a boundary on the map.");
+                return;
+            }
+
+            try {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+                const response = await fetch('/waterbodies', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        body_id: bodyId, 
+                        name: bodyName,
+                        water_type: bodyType,
+                        district: bodyDistrict,
+                        area: bodyArea,
+                        boundary_geojson: geojson 
+                    })
+                });
+
+                if (response.ok) {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Registered!';
+                    btn.style.background = 'var(--accent-green)';
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="fa-solid fa-save"></i> Register Boundary';
+                        btn.style.background = '';
+                        clearDrawing();
+                        loadBoundaries(); 
+                    }, 2000);
+                } else {
+                    const err = await response.json();
+                    alert("Error: " + err.detail);
+                    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error';
+                }
+            } catch (err) {
+                alert("Server connection failed.");
+            }
+        }
+
+        async function loadBoundaries() {
+            try {
+                const res = await fetch('/waterbodies');
+                const boundaries = await res.json();
+                
+                drawnItems.clearLayers();
+                
+                boundaries.forEach(b => {
+                    const layer = L.geoJSON(JSON.parse(b.boundary_geojson), {
+                        style: { color: '#3b82f6', fillOpacity: 0.2 }
+                    }).addTo(map);
+                    
+                    const popupContent = `
+                        <div style="color: #fff; background: #0B1218; padding: 10px; border-radius: 8px;">
+                            <b style="color: var(--accent-blue)">${b.body_id}</b><br>
+                            <span style="font-size: 1.1rem; font-weight: bold;">${b.name}</span><br>
+                            <span style="color: #94a3b8; font-size: 0.8rem;">Type: ${b.water_type}</span><br>
+                            <button onclick="fetchAndEdit('${b.body_id}')" 
+                                    style="margin-top: 8px; width: 100%; padding: 5px; background: var(--accent-blue); border: none; border-radius: 4px; color: #fff; cursor: pointer;">
+                                <i class="fa-solid fa-pen"></i> Edit in form
+                            </button>
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent);
+                });
+            } catch (err) { console.error("Could not load boundaries:", err); }
+        }
+
+        function loadSelectedBody(value) {
+            if (!value) { clearDrawing(); return; }
+            
+            let data;
+            try {
+                data = typeof value === 'string' ? JSON.parse(value) : value;
+            } catch(e) {
+                return;
+            }
+
+            document.getElementById('bodyId').value = data.body_id;
+            document.getElementById('bodyName').value = data.name;
+            document.getElementById('bodyType').value = data.water_type;
+            document.getElementById('bodyDistrict').value = data.district;
+            document.getElementById('bodyArea').value = data.area;
+            document.getElementById('polygonData').value = data.boundary_geojson;
+            
+            const layer = L.geoJSON(JSON.parse(data.boundary_geojson)).addTo(map);
+            map.flyToBounds(layer.getBounds(), { padding: [20, 20] });
+            map.closePopup();
+        }
+
+        async function fetchAndEdit(id) {
+            const res = await fetch('/waterbodies');
+            const bodies = await res.json();
+            const body = bodies.find(b => b.body_id === id);
+            if (body) loadSelectedBody(JSON.stringify(body));
+        }
+
+        window.onload = loadBoundaries;
     </script>
 </body>
 </html>
