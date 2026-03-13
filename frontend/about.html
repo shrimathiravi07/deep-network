@@ -4,37 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water-Guard AI | About Us</title>
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .about-hero {
+            background: #0B1218 !important; /* Forces no image */
+            min-height: 40vh !important;
+            padding-top: 120px;
+        }
+
+        .about-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-blue);
+        }
+
+        .glass-card i {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .glass-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .glass-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body class="landing-mode">
+    <!-- Navigation Header -->
     <header class="landing-header">
         <div class="header-container">
-            <div class="logo-brand">
+            <a href="index.html" class="logo-brand">
                 <div class="icon-ring-small">
                     <i class="fa-solid fa-water"></i>
                 </div>
                 <h1>Water-Guard AI</h1>
-            </div>
+            </a>
             <nav class="header-nav">
                 <a href="index.html" class="nav-link">Home</a>
-                <a href="contact.html" class="nav-link">Contact</a>
+                <a href="history.html" class="nav-link">Historical Data</a>
                 <a href="login.html" class="nav-link login-btn">Login / Register</a>
             </nav>
         </div>
     </header>
 
-    <section class="hero-section" style="padding-top: 150px; min-height: 50vh;">
-        <div class="hero-content">
-            <div class="hero-text" style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <h2 class="hero-title">About Water-Guard AI</h2>
-                <p class="hero-subtitle">Our mission is to protect the world's freshwater resources using advanced artificial intelligence and community action.</p>
-                <div class="problem-statement">
-                    <p>Water-Guard AI brings together cutting-edge satellite imagery, deep learning models, and citizen reporting to find and resolve waterbody encroachments before irreversible damage is done. Built by a passionate team of developers dedicated to environmental conservation.</p>
+    <main>
+        <!-- About Hero Section -->
+        <section class="hero-section about-hero">
+            <div class="hero-overlay" style="background: transparent;"></div>
+            <div class="hero-content" style="grid-template-columns: 1fr; text-align: center;">
+                <div class="hero-text">
+                    <h2 class="hero-title">Our Vision for Water Conservation</h2>
+                    <p class="hero-subtitle">Combining intelligence with environmental stewardship.</p>
                 </div>
             </div>
+        </section>
+
+        <!-- Mission Details -->
+        <section class="about-content">
+            <div class="section-header">
+                <h3>The Mission</h3>
+                <p>We believe technology should be the primary line of defense for our planet's resources.</p>
+            </div>
+
+            <div class="mission-grid">
+                <div class="glass-card">
+                    <i class="fa-solid fa-microchip"></i>
+                    <h3>AI Detection</h3>
+                    <p>Using U-Net architectures and satellite telemetry to identify encroachment patterns with surgical precision.</p>
+                </div>
+
+                <div class="glass-card">
+                    <i class="fa-solid fa-users-viewfinder"></i>
+                    <h3>Public Empowerment</h3>
+                    <p>Providing citizens with the tools to report violations directly to concerned authorities with geo-tagged evidence.</p>
+                </div>
+
+                <div class="glass-card">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <h3>Legal Compliance</h3>
+                    <p>Streamlining the workflow between detection and action to ensure legal protection for our lakes and rivers.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer copied from index.html concept -->
+    <footer class="landing-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2026 Water-Guard AI. All rights reserved. | Protecting Nature with Intelligence</p>
         </div>
-    </section>
+    </footer>
+
 </body>
 </html>
