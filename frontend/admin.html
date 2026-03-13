@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Command Center | Water-Guard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-mode">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo-section" style="margin-bottom: 2rem;">
+                <div class="icon-ring-small" style="background: var(--accent-green);"><i class="fa-solid fa-user-gear"></i></div>
+                <h1 style="font-size: 1.2rem;">Admin Panel</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active" onclick="showSubSection('waterbodies')">
+                    <i class="fa-solid fa-draw-polygon"></i> Manage Boundaries
+                </a>
+                <a href="#" class="sidebar-link" onclick="showSubSection('officers')">
+                    <i class="fa-solid fa-users"></i> Manage Officers
+                </a>
+                <a href="analytics.html" class="sidebar-link">
+                    <i class="fa-solid fa-chart-pie"></i> Analytics Dashboard
+                </a>
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1rem 0;">
+                <a href="index.html" class="sidebar-link" style="color: var(--accent-danger);">
+                    <i class="fa-solid fa-sign-out-alt"></i> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <main style="padding: 2.5rem; overflow-y: auto; background: #0B1218;">
+            <div id="waterbodies-sub" class="sub-section">
+                <div class="section-header" style="margin-bottom: 2rem;">
+                    <h2>Water Body Boundary Management</h2>
+                    <p style="color: var(--text-secondary);">Draw polygon boundaries to register new protected water bodies (Digital Passport Mapping).</p>
+                </div>
+                
+                <div class="glass-panel" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="form-container">
+                        <div class="control-group">
+                            <label>Internal Waterbody ID</label>
+                            <input type="text" placeholder="e.g. TN-CHE-LK01">
+                        </div>
+                        <div class="control-group">
+                            <label>Boundary Data (GeoJSON)</label>
+                            <textarea id="polygonData" rows="6" readonly placeholder="Draw on map to generate data..."></textarea>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; justify-content: center;">
+                            <i class="fa-solid fa-save"></i> Register Boundary
+                        </button>
+                    </div>
+                    <div class="map-container" style="height: 100%;">
+                        <div id="admin-map" style="width: 100%; height: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="officers-sub" class="sub-section" style="display: none;">
+                <div class="section-header" style="margin-bottom: 2rem;">
+                    <h2>District Officer Management</h2>
+                    <p style="color: var(--text-secondary);">Assign and manage personnel for field inspections.</p>
+                </div>
+                <div class="glass-panel">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>District</th>
+                                <th>Active Cases</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Officer Rajesh</td>
+                                <td>Chennai Central</td>
+                                <td>14</td>
+                                <td><span class="badge badge-resolved">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>Officer Priya</td>
+                                <td>Kanchipuram</td>
+                                <td>8</td>
+                                <td><span class="badge badge-resolved">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+    <script>
+        function showSubSection(s) {
+            document.querySelectorAll('.sub-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(s + '-sub').style.display = 'block';
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            event.target.closest('.sidebar-link').classList.add('active');
+        }
+
+        let map = L.map('admin-map').setView([13.0827, 80.2707], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        let drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+        let drawControl = new L.Control.Draw({
+            edit: { featureGroup: drawnItems },
+            draw: { polygon: true, polyline: false, rectangle: true, circle: false, marker: false, circlemarker: false }
+        });
+        map.addControl(drawControl);
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            let layer = event.layer;
+            drawnItems.addLayer(layer);
+            document.getElementById('polygonData').value = JSON.stringify(layer.toGeoJSON());
+        });
+    </script>
+</body>
+</html>

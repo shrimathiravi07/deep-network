@@ -4,654 +4,153 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water-Guard AI | Login & Register</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --bg-dark: #0f172a;
-            --panel-bg: rgba(30, 41, 59, 0.7);
-            --accent-blue: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.4);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border-light: rgba(255, 255, 255, 0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Outfit', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
+        .auth-container {
             min-height: 100vh;
-            display: flex;
-            overflow-x: hidden;
-            background-image: radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 40%);
-        }
-
-        /* Split Screen Container */
-        .auth-wrapper {
-            display: flex;
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        /* Hero Section (Left) */
-        .auth-hero {
-            flex: 1;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            padding: 4rem;
-            position: relative;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 58, 138, 0.4) 100%);
-            border-right: 1px solid var(--border-light);
-            backdrop-filter: blur(10px);
-            overflow: hidden;
-        }
-
-        @media (min-width: 900px) {
-            .auth-hero {
-                display: flex;
-            }
-        }
-
-        .auth-hero::before {
-            content: '';
-            position: absolute;
-            top: 0; right: 0; bottom: 0; left: 0;
-            background: url('assets/compare.png') center/cover;
-            opacity: 0.15;
-            z-index: -1;
-            mix-blend-mode: overlay;
-        }
-
-        .hero-content {
-            z-index: 10;
-        }
-
-        .hero-icon {
-            font-size: 3rem;
-            color: var(--accent-blue);
-            margin-bottom: 1.5rem;
-            filter: drop-shadow(0 0 15px var(--accent-glow));
-        }
-
-        .hero-title {
-            font-size: 3.5rem;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1rem;
-            background: linear-gradient(to right, #ffffff, #93c5fd);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-subtitle {
-            font-size: 1.25rem;
-            color: #cbd5e1;
-            max-width: 80%;
-            line-height: 1.5;
-            margin-bottom: 2rem;
-            font-weight: 300;
-        }
-
-        /* Form Section (Right) */
-        .auth-panel {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 2rem;
-            margin: auto;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        @media (min-width: 900px) {
-            .auth-panel {
-                width: 45%;
-                max-width: 600px;
-                padding: 4rem;
-                background: var(--bg-dark);
-            }
-        }
-
-        /* Fixed Form Container */
-        .form-container {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(20px);
-            /* This prevents the jumping effect */
-            display: flex;
-            flex-direction: column;
-            min-height: 520px;
-            transition: min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .auth-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .auth-header h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .auth-header p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        /* Smooth Tab Switcher */
-        .tab-switcher {
-            display: flex;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 0.35rem;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 0.75rem 1rem;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 2;
-        }
-
-        .tab.active {
-            color: white;
-            background: var(--accent-blue);
-            box-shadow: 0 4px 15px var(--accent-glow);
-        }
-
-        /* Form Inputs */
-        .form-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            flex-grow: 1;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .input-group label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .input-icon-wrapper {
-            position: relative;
             display: flex;
             align-items: center;
+            justify-content: center;
+            background: #0B1218;
         }
-
-        .input-icon-wrapper i {
-            position: absolute;
-            left: 1rem;
-            color: var(--text-secondary);
-            font-size: 1rem;
-            transition: color 0.3s ease;
-        }
-
-        .input-field {
+        .auth-card {
             width: 100%;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--border-light);
-            padding: 1rem 1rem 1rem 3rem;
-            border-radius: 12px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
+            max-width: 450px;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
         }
-
-        .input-field:focus {
-            border-color: var(--accent-blue);
-            background: rgba(30, 41, 59, 0.8);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-        }
-
-        .input-field:focus + i, .input-field:valid + i {
-            color: var(--accent-blue);
-        }
-
-        /* Expandable Sections */
-        .expandable {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .expandable.open {
-            grid-template-rows: 1fr;
-        }
-
-        .expandable-inner {
-            min-height: 0;
+        .auth-tabs {
             display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
-        /* Role Selection */
-        .role-grid {
+        .auth-tab {
+            padding: 10px 0;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+        }
+        .auth-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .role-selector {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
-            margin-top: 0.25rem;
+            gap: 10px;
+            margin-bottom: 1.5rem;
         }
-
         .role-option {
-            position: relative;
-        }
-
-        .role-option input {
-            display: none;
-        }
-
-        .role-label {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem 0.5rem;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            gap: 0.5rem;
+            font-size: 0.85rem;
         }
-
-        .role-label i {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            transition: all 0.3s ease;
-        }
-
-        .role-label span {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .role-option input:checked + .role-label {
-            background: rgba(59, 130, 246, 0.15);
+        .role-option.active {
+            background: rgba(59, 130, 246, 0.1);
             border-color: var(--accent-blue);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-        }
-
-        .role-option input:checked + .role-label i,
-        .role-option input:checked + .role-label span {
             color: var(--accent-blue);
-        }
-
-        /* Extra Options (Login) */
-        .login-extras {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-        }
-
-        .forgot-link {
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        .forgot-link:hover { color: #93c5fd; }
-
-        /* Submit Button */
-        .submit-btn {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(to right, #2563eb, #3b82f6);
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: auto; /* Pushes it to bottom nicely */
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.6);
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        /* Messages */
-        .msg-box {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: none;
-            margin-bottom: 1rem;
-            animation: fadeIn 0.3s ease forwards;
-        }
-
-        .msg-error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-        }
-
-        .msg-success {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #86efac;
-        }
-
-        /* Back Button */
-        .back-nav {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            z-index: 50;
-        }
-
-        .back-nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: color 0.3s;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            border: 1px solid var(--border-light);
-        }
-
-        .back-nav a:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
-
-    <div class="auth-wrapper">
-        <!-- Back Navigation -->
-        <div class="back-nav">
-            <a href="index.html">
-                <i class="fa-solid fa-arrow-left"></i> Return Home
-            </a>
-        </div>
-
-        <!-- Left Hero Section -->
-        <div class="auth-hero">
-            <div class="hero-content">
-                <i class="fa-solid fa-water hero-icon"></i>
-                <h1 class="hero-title">Protecting<br>Our Future.</h1>
-                <p class="hero-subtitle">Water-Guard AI connects citizens with officers to proactively detect, monitor, and prevent unauthorized water body encroachments globally.</p>
-                
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <div style="display: flex; -space-x: 0.5rem;">
-                        <img src="https://ui-avatars.com/api/?name=Officer+A&background=random" style="width: 40px; border-radius: 50%; border: 2px solid var(--bg-dark);">
-                        <img src="https://ui-avatars.com/api/?name=Citizen+B&background=random" style="width: 40px; border-radius: 50%; border: 2px solid var(--bg-dark); transform: translateX(-10px);">
-                        <img src="https://ui-avatars.com/api/?name=Admin+C&background=random" style="width: 40px; border-radius: 50%; border: 2px solid var(--bg-dark); transform: translateX(-20px);">
-                    </div>
-                    <span style="color: var(--text-secondary); font-size: 0.85rem; transform: translateX(-15px);">
-                        Join 45,000+ active users.
-                    </span>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div class="icon-ring-small" style="margin: 0 auto 1rem; width: 48px; height: 48px;">
+                    <i class="fa-solid fa-water"></i>
                 </div>
+                <h2 style="font-weight: 800;">Secure Portal</h2>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Citizen & Officer Access</p>
             </div>
-        </div>
 
-        <!-- Right Form Section -->
-        <div class="auth-panel">
-            <div class="form-container" id="formContainer">
-                
-                <div class="auth-header">
-                    <h2>Welcome back</h2>
-                    <p>Enter your details to access your dashboard.</p>
-                </div>
-
-                <div class="tab-switcher">
-                    <div class="tab active" id="tab-login" onclick="setMode('login')">Sign In</div>
-                    <div class="tab" id="tab-register" onclick="setMode('register')">Create Account</div>
-                </div>
-
-                <div class="msg-box msg-error" id="errorBox"></div>
-                <div class="msg-box msg-success" id="successBox"></div>
-
-                <form id="authForm" class="form-content" onsubmit="handleAuth(event)">
-                    
-                    <div class="input-group">
-                        <label>Username</label>
-                        <div class="input-icon-wrapper">
-                            <i class="fa-solid fa-user"></i>
-                            <input type="text" id="username" class="input-field" placeholder="Enter username" required autocomplete="off">
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Password</label>
-                        <div class="input-icon-wrapper">
-                            <i class="fa-solid fa-lock"></i>
-                            <input type="password" id="password" class="input-field" placeholder="Enter password" required>
-                        </div>
-                    </div>
-
-                    <!-- Expandable Register Fields -->
-                    <div class="expandable" id="registerFields">
-                        <div class="expandable-inner" style="padding-top: 0.25rem;">
-                            
-                            <div class="input-group">
-                                <label>Confirm Password</label>
-                                <div class="input-icon-wrapper">
-                                    <i class="fa-solid fa-check-double"></i>
-                                    <input type="password" id="confirmPassword" class="input-field" placeholder="Re-enter password">
-                                </div>
-                            </div>
-
-                            <div class="input-group">
-                                <label>Select Role</label>
-                                <div class="role-grid">
-                                    <label class="role-option">
-                                        <input type="radio" name="role" value="citizen" checked>
-                                        <div class="role-label">
-                                            <i class="fa-solid fa-person"></i>
-                                            <span>Citizen</span>
-                                        </div>
-                                    </label>
-                                    <label class="role-option">
-                                        <input type="radio" name="role" value="officer">
-                                        <div class="role-label">
-                                            <i class="fa-solid fa-shield"></i>
-                                            <span>Officer</span>
-                                        </div>
-                                    </label>
-                                    <label class="role-option">
-                                        <input type="radio" name="role" value="admin">
-                                        <div class="role-label">
-                                            <i class="fa-solid fa-crown"></i>
-                                            <span>Admin</span>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Expandable Login Extras -->
-                    <div class="expandable open" id="loginExtras">
-                        <div class="expandable-inner">
-                            <div class="login-extras">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" style="accent-color: var(--accent-blue);"> Remember me
-                                </label>
-                                <a href="#" class="forgot-link" onclick="openForgot(event)">Forgot password?</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="submitBtn">
-                        Sign In <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                    
-                </form>
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+                <div class="auth-tab" onclick="switchTab('register')">Register</div>
             </div>
+
+            <form id="authForm" onsubmit="handleAuth(event)">
+                <div class="form-group">
+                    <label>Email / Username</label>
+                    <input type="text" id="username" placeholder="Enter your credentials" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <div id="registerFields" style="display: none;">
+                    <div class="form-group">
+                        <label>Select Your Role</label>
+                        <div class="role-selector">
+                            <div class="role-option active" data-role="citizen" onclick="selectRole(this)">Citizen</div>
+                            <div class="role-option" data-role="officer" onclick="selectRole(this)">Officer</div>
+                            <div class="role-option" data-role="admin" onclick="selectRole(this)">Admin</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+                    <span id="btnText">Sign In</span>
+                </button>
+
+                <p id="authMessage" style="margin-top: 1rem; text-align: center; font-size: 0.85rem;"></p>
+                
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem;">Forgot Password?</a>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        let isLogin = true;
+        let currentTab = 'login';
+        let selectedRole = 'citizen';
 
-        function setMode(mode) {
-            isLogin = (mode === 'login');
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
             
-            // Update tabs
-            document.getElementById('tab-login').classList.toggle('active', isLogin);
-            document.getElementById('tab-register').classList.toggle('active', !isLogin);
-            
-            // Expand/Collapse animations
-            const regFields = document.getElementById('registerFields');
-            const logExtras = document.getElementById('loginExtras');
-            
-            if (isLogin) {
-                regFields.classList.remove('open');
-                logExtras.classList.add('open');
-                
-                // Clear validation
-                document.getElementById('confirmPassword').required = false;
-                
-                // Update text
-                document.querySelector('.auth-header h2').textContent = 'Welcome back';
-                document.querySelector('.auth-header p').textContent = 'Enter your details to access your dashboard.';
-                document.getElementById('submitBtn').innerHTML = 'Sign In <i class="fa-solid fa-arrow-right"></i>';
-            } else {
-                regFields.classList.add('open');
-                logExtras.classList.remove('open');
-                
-                // Add validation
-                document.getElementById('confirmPassword').required = true;
-                
-                // Update text
-                document.querySelector('.auth-header h2').textContent = 'Create Account';
-                document.querySelector('.auth-header p').textContent = 'Join the network to monitor water bodies.';
-                document.getElementById('submitBtn').innerHTML = 'Register <i class="fa-solid fa-user-plus"></i>';
-            }
-
-            hideMsg();
+            document.getElementById('registerFields').style.display = tab === 'register' ? 'block' : 'none';
+            document.getElementById('btnText').innerText = tab === 'login' ? 'Sign In' : 'Create Account';
+            document.getElementById('authMessage').innerText = '';
         }
 
-        function showMsg(type, text) {
-            const errorBox = document.getElementById('errorBox');
-            const successBox = document.getElementById('successBox');
-            
-            errorBox.style.display = 'none';
-            successBox.style.display = 'none';
-            
-            if (type === 'error') {
-                errorBox.textContent = text;
-                errorBox.style.display = 'block';
-            } else {
-                successBox.textContent = text;
-                successBox.style.display = 'block';
-            }
-        }
-
-        function hideMsg() {
-            document.getElementById('errorBox').style.display = 'none';
-            document.getElementById('successBox').style.display = 'none';
+        function selectRole(el) {
+            document.querySelectorAll('.role-option').forEach(o => o.classList.remove('active'));
+            el.classList.add('active');
+            selectedRole = el.getAttribute('data-role');
         }
 
         async function handleAuth(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.innerHTML;
-            
-            const username = document.getElementById('username').value.trim();
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
-            if (!isLogin) {
-                const confirmPass = document.getElementById('confirmPassword').value;
-                if (password !== confirmPass) {
-                    showMsg('error', 'Passwords do not match!');
-                    return;
-                }
-                if (password.length < 5) {
-                    showMsg('error', 'Password must be at least 5 characters');
-                    return;
-                }
-            }
+            const messageEl = document.getElementById('authMessage');
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
-            btn.style.opacity = '0.8';
+            const endpoint = currentTab === 'login' ? '/login' : '/register';
+            const body = { username, password };
+            if (currentTab === 'register') body.role = selectedRole;
 
             try {
-                const endpoint = isLogin ? '/login' : '/register';
-                const body = isLogin 
-                    ? { username, password }
-                    : { username, password, role: document.querySelector('input[name="role"]:checked').value };
-
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -659,38 +158,24 @@
                 });
 
                 const data = await response.json();
+                if (response.ok) {
+                    messageEl.style.color = 'var(--accent-green)';
+                    messageEl.innerText = data.message || 'Success!';
+                    
+                    localStorage.setItem('user_id', data.user_id);
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('role', data.role);
 
-                if (!response.ok) {
-                    throw new Error(data.detail || 'Authentication failed');
+                    setTimeout(() => {
+                        window.location.href = (data.role === 'officer' || data.role === 'admin') ? 'officer.html' : 'citizen.html';
+                    }, 1000);
+                } else {
+                    messageEl.style.color = 'var(--accent-danger)';
+                    messageEl.innerText = data.detail || 'Authentication failed';
                 }
-
-                // Success
-                showMsg('success', isLogin ? 'Login successful! Redirecting...' : 'Account created! Redirecting...');
-                localStorage.setItem('user_id', data.user_id || data.id);
-                localStorage.setItem('username', data.username);
-                localStorage.setItem('role', data.role);
-
-                // Smooth Redirect
-                setTimeout(() => {
-                    if (data.role === 'officer' || data.role === 'admin') {
-                        window.location.href = 'officer.html';
-                    } else {
-                        window.location.href = 'citizen.html';
-                    }
-                }, 800);
-
-            } catch (error) {
-                showMsg('error', error.message);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                btn.style.opacity = '1';
+            } catch (err) {
+                messageEl.innerText = 'Error connecting to server';
             }
-        }
-
-        // Dummy forgot password
-        function openForgot(e) {
-            e.preventDefault();
-            showMsg('success', 'Reset link feature would go here!');
         }
     </script>
 </body>
