@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from datetime import datetime
 
 # -------- User Schemas -------- #
 class UserCreate(BaseModel):
@@ -27,6 +28,7 @@ class ComplaintResponse(BaseModel):
     image_path: Optional[str] = None
     status: str
     user_id: int
+    created_at: datetime
 
     class Config:
         from_attributes = True

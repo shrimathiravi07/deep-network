@@ -1,14 +1,14 @@
 /* Reset and Base Styles */
 :root {
-    --bg-dark: #0f172a;
-    --panel-bg: rgba(15, 23, 42, 0.7);
+    --bg-dark: #0B1218;
+    --panel-bg: rgba(11, 18, 24, 0.65);
     --panel-border: rgba(255, 255, 255, 0.1);
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --accent-blue: #3b82f6;
-    --accent-blue-hover: #2563eb;
-    --accent-success: #10b981;
-    --accent-danger: #ef4444;
+    --accent-blue: #00A8FF;
+    --accent-blue-hover: #008DDE;
+    --accent-success: #2ECC71;
+    --accent-danger: #FF4D4D;
     --font-main: 'Inter', sans-serif;
     --corner-radius: 16px;
 }
@@ -89,6 +89,7 @@ body.dashboard-mode {
     letter-spacing: 0.5px;
     background: linear-gradient(to right, #cfd9df 0%, #e2ebf0 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -306,27 +307,35 @@ body.dashboard-mode {
 .map-container {
     flex: 1;
     position: relative;
-    background: #000;
+    background: #1a1a1a;
+    background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
 }
 
 #map {
     width: 100%;
     height: 100%;
     z-index: 1;
-    filter: brightness(0.85) contrast(1.1) saturate(1.2);
+    filter: brightness(0.9) contrast(1.2) saturate(1.1) grayscale(0.2);
 }
 
-/* Map Overlay HUD elements */
+/* Glassmorphism Stat Cards over map */
 .map-overlay {
     position: absolute;
     top: 2rem;
     right: 2rem;
     padding: 1rem 1.5rem;
     border-radius: 12px;
-    border: 1px solid var(--panel-border);
+    background: rgba(11, 18, 24, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     gap: 2rem;
     z-index: 1000;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 .stat-box {
@@ -382,7 +391,7 @@ body.dashboard-mode {
 .landing-page {
     width: 100%;
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f172a 0%, #1a2847 50%, #0f172a 100%);
+    background: var(--bg-dark);
     overflow-x: hidden;
 }
 
@@ -434,6 +443,7 @@ body.dashboard-mode {
     font-weight: 700;
     background: linear-gradient(to right, #cfd9df 0%, #e2ebf0 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: 0.5px;
 }
@@ -491,14 +501,49 @@ body.dashboard-mode {
     display: none;
 }
 
-/* Hero Section */
+/* Cinematic Hero Section */
 .hero-section {
-    padding: 120px 2rem 80px;
-    max-width: 1400px;
-    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 80px 2rem 40px;
+    background: url('assets/lake_comparison.png?v=2') center/cover no-repeat;
+    overflow: hidden;
+}
+
+
+.hero-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(11, 18, 24, 0.55);
+    z-index: 1;
+}
+
+/* Scanning Line Animation */
+.hero-scanline {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--accent-blue);
+    box-shadow: 0 0 25px 5px rgba(0, 168, 255, 0.5);
+    z-index: 2;
+    animation: scanAI 6s linear infinite;
+}
+
+@keyframes scanAI {
+    0% { top: -5%; }
+    100% { top: 105%; }
 }
 
 .hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
@@ -516,6 +561,7 @@ body.dashboard-mode {
     margin-bottom: 1.5rem;
     background: linear-gradient(to right, #e2ebf0, #cfd9df, #60a5fa);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -1px;
 }
@@ -541,6 +587,18 @@ body.dashboard-mode {
 .problem-statement strong {
     color: var(--accent-blue);
     font-weight: 600;
+}
+
+/* Glassmorphism Panel */
+.analysis-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 2.5rem;
+    color: white;
+    z-index: 10;
 }
 
 .hero-buttons {
@@ -606,24 +664,7 @@ body.dashboard-mode {
     justify-content: center;
 }
 
-.river-illustration {
-    font-size: 200px;
-    color: var(--accent-blue);
-    opacity: 0.15;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
-    border-radius: 20px;
-    animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-30px); }
-}
+/* Removed River Illustration block in favor of cinematic background */
 
 /* Map Preview Section */
 .map-preview-section {
@@ -647,6 +688,7 @@ body.dashboard-mode {
     margin-bottom: 0.75rem;
     background: linear-gradient(to right, #e2ebf0, #cfd9df);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -892,6 +934,7 @@ body.dashboard-mode {
     margin-bottom: 1.5rem;
     background: linear-gradient(to right, #60a5fa, #10b981);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -1085,5 +1128,69 @@ body.dashboard-mode {
 
     .map-legend {
         gap: 1.5rem;
+    }
+}
+
+/* Case Study Section */
+.case-study-section {
+    padding: 80px 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.case-study-container {
+    margin-top: 3rem;
+}
+
+.case-study-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    padding: 3rem;
+    align-items: center;
+}
+
+.case-study-details h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent-blue);
+}
+
+.case-study-details p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.case-study-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.cs-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.cs-val {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.cs-lbl {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 900px) {
+    .case-study-card {
+        grid-template-columns: 1fr;
+        padding: 2rem;
     }
 }

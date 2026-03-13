@@ -5,6 +5,10 @@ import cv2
 import numpy as np
 import os
 import shutil
+import io
+from PIL import Image
+from torchvision import transforms
+from fastapi.staticfiles import StaticFiles
 
 from model import get_water_guard_model
 from database import SessionLocal, engine, User, Complaint
@@ -16,7 +20,10 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load model
 model = get_water_guard_model().to(device)
-model.load_state_dict(torch.load("models/best_model.pth", map_location=device))
+try:
+    model.load_state_dict(torch.load("models/best_unet.pth", map_location=device, weights_only=True))
+except Exception as e:
+    print(f"Warning: Could not load model - {e}")
 model.eval()
 
 
@@ -25,11 +32,16 @@ async def predict(file: UploadFile = File(...)):
 
     # Read image
     data = await file.read()
-    img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
+    img = Image.open(io.BytesIO(data)).convert("RGB")
 
     # Preprocess
-    img = cv2.resize(img,(512,512))/255.0
-    tensor = torch.tensor(img).permute(2,0,1).unsqueeze(0).float().to(device)
+    img_transform = transforms.Compose([
+        transforms.Resize((256, 256)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    
+    tensor = img_transform(img).unsqueeze(0).to(device)
 
     # Prediction
     with torch.no_grad():
@@ -63,6 +75,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
+
 
 @app.post("/login")
 def login(user: UserCreate, db: Session = Depends(get_db)):
@@ -123,3 +136,11 @@ def update_complaint_status(complaint_id: int, update: ComplaintUpdate, db: Sess
     db.commit()
     db.refresh(complaint)
     return complaint
+
+# Mount static files at the end so it doesn't shadow API routes
+app.mount("/dataset", StaticFiles(directory="dataset"), name="dataset")
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

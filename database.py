@@ -1,13 +1,15 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.sql import func
 import os
 
-# Create SQLite database in the current directory
-SQLALCHEMY_DATABASE_URL = "sqlite:///./waterguard.db"
+# PostgreSQL database connection (replace with your credentials)
+# Format: postgresql://username:password@host:port/database_name
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:2801@localhost:5432/waterguard"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -33,6 +35,7 @@ class Complaint(Base):
     image_path = Column(String, nullable=True) # Path to the uploaded photo
     status = Column(String, default="pending") # pending, investigating, resolved
     user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     owner = relationship("User", back_populates="complaints")
 

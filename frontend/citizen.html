@@ -395,6 +395,114 @@
         .alerts-container::-webkit-scrollbar-thumb:hover {
             background: rgba(59, 130, 246, 0.5);
         }
+
+        /* Satellite Viewfinder Drop Zone */
+        .satellite-viewfinder {
+            position: relative;
+            background: rgba(11, 18, 24, 0.8) !important;
+            border: 1px solid var(--accent-blue) !important;
+            overflow: hidden;
+        }
+
+        .viewfinder-ui {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--accent-blue);
+            z-index: 2;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0; left: 0;
+        }
+
+        .scan-target {
+            font-size: 2.5rem;
+            animation: pulse-scan 2s infinite;
+        }
+
+        .scan-text {
+            font-family: monospace;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        @keyframes pulse-scan {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; text-shadow: 0 0 10px var(--accent-blue); }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .corner {
+            position: absolute;
+            width: 20px; height: 20px;
+            border: 2px solid var(--accent-success);
+        }
+        .tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+        .bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+        .br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+        /* Processing Overlay */
+        .processing-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11, 18, 24, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 5;
+            transition: opacity 0.3s;
+        }
+
+        .processing-overlay.hidden {
+            display: none;
+            opacity: 0;
+        }
+
+        .unet-grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,168,255,0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,168,255,0.2) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: gridMove 2s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+
+        .unet-bounding-box {
+            width: 50%;
+            height: 50%;
+            border: 2px dashed var(--accent-danger);
+            background: rgba(255, 77, 77, 0.2);
+            position: relative;
+            z-index: 10;
+            animation: drawBox 1.5s ease-out infinite alternate;
+        }
+
+        @keyframes drawBox {
+            0% { width: 40%; height: 40%; }
+            100% { width: 60%; height: 50%; }
+        }
+
+        .processing-text {
+            margin-top: 15px;
+            color: var(--accent-success);
+            font-family: monospace;
+            font-weight: bold;
+            z-index: 10;
+            text-shadow: 0 0 5px var(--accent-success);
+        }
+
     </style>
 </head>
 <body class="dashboard-mode">
@@ -429,7 +537,7 @@
             </div>
 
             <!-- TAB 1: REPORT ENCROACHMENT -->
-            <div class="dashboard-tab-content active" id="tab-report">
+            <div class="dashboard-tab-content active" id="tab-report" style="position: relative; background: linear-gradient(135deg, rgba(11, 18, 24, 0.95) 0%, rgba(0, 168, 255, 0.15) 100%), repeating-radial-gradient(circle at center, rgba(0, 168, 255, 0.05) 0, rgba(0, 168, 255, 0.05) 1px, transparent 1px, transparent 15px); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(0, 168, 255, 0.2);">
                 <div class="success-notification" id="successNotification">
                     <i class="fa-solid fa-check-circle"></i> Complaint submitted successfully!
                 </div>
@@ -467,13 +575,25 @@
 
                 <div class="control-group">
                     <label for="reportImage">
-                        <i class="fa-solid fa-camera"></i> Evidence Photo
+                        <i class="fa-solid fa-crosshairs"></i> Satellite Imagery Drop Zone
                     </label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="reportImage" accept="image/*">
-                        <div class="file-upload-ui">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Click to upload image</span>
+                    <div class="satellite-viewfinder file-upload-wrapper" id="dropZoneContainer">
+                        <input type="file" id="reportImage" accept="image/*" class="viewfinder-input" style="z-index: 20;">
+                        
+                        <div class="viewfinder-ui" id="viewfinderUi">
+                            <i class="fa-solid fa-satellite-dish scan-target"></i>
+                            <span class="scan-text">DROP SATELLITE IMAGERY HERE</span>
+                            <div class="corner tl"></div>
+                            <div class="corner tr"></div>
+                            <div class="corner bl"></div>
+                            <div class="corner br"></div>
+                        </div>
+
+                        <!-- Processing Animation UI -->
+                        <div class="processing-overlay hidden" id="processingOverlay">
+                            <div class="unet-grid"></div>
+                            <div class="unet-bounding-box" id="unetBox"></div>
+                            <span class="processing-text">ANALYZING PIXELS...</span>
                         </div>
                     </div>
                 </div>
@@ -501,7 +621,7 @@
                     </div>
                     <div class="stat-mini">
                         <div class="stat-mini-value" id="stat-in-progress">0</div>
-                        <div class="stat-mini-label">In Progress</div>
+                        <div class="stat-mini-label">Investigating</div>
                     </div>
                     <div class="stat-mini">
                         <div class="stat-mini-value" id="stat-resolved">0</div>
@@ -714,6 +834,11 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
 
+            const overlay = document.getElementById('processingOverlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+            }
+
             try {
                 const formData = new FormData();
                 formData.append('location', location);
@@ -725,7 +850,7 @@
                     formData.append('lng', selectedCoordinates.lng);
                 }
 
-                const response = await fetch('http://127.0.0.1:8000/complaints', {
+                const response = await fetch('/complaints', {
                     method: 'POST',
                     body: formData
                 });
@@ -740,14 +865,19 @@
                 document.getElementById('reportLocation').value = '';
                 document.getElementById('reportDescription').value = '';
                 reportImage.value = '';
-                fileText.textContent = 'Click to upload image';
-                fileIcon.className = 'fa-solid fa-cloud-arrow-up';
-                fileIcon.style.color = '#3b82f6';
+                const fileText = document.querySelector('.scan-text');
+                const fileIcon = document.querySelector('.scan-target');
+                if (fileText && fileIcon) {
+                    fileText.textContent = 'DROP SATELLITE IMAGERY HERE';
+                    fileIcon.className = 'fa-solid fa-satellite-dish scan-target';
+                    fileIcon.style.color = 'var(--accent-blue)';
+                }
+                document.getElementById('processingOverlay').classList.add('hidden');
                 
                 // Show AI result
                 const aiForm = new FormData();
                 aiForm.append('file', imageFile);
-                const aiRes = await fetch('http://127.0.0.1:8000/predict', { method: 'POST', body: aiForm });
+                const aiRes = await fetch('/predict', { method: 'POST', body: aiForm });
                 const aiData = await aiRes.json();
                 
                 const severity = aiData.water_pixels < 1000 ? 'CRITICAL' : 'MODERATE';
@@ -758,7 +888,10 @@
                     </div>
                     <div style="font-size: 0.9rem;">
                         <div style="margin-bottom: 0.5rem;"><strong>AI Analysis:</strong> ${severity}</div>
-                        <div>Water pixels detected: <strong>${aiData.water_pixels}</strong></div>
+                        <div style="margin-bottom: 1rem;">Water pixels detected: <strong>${aiData.water_pixels}</strong></div>
+                        <button class="btn btn-outline" style="width: 100%; border: 1px solid var(--accent-blue); padding: 8px; border-radius: 8px; color: var(--text-primary); cursor: pointer;" onclick="window.print()">
+                            <i class="fa-solid fa-file-pdf"></i> Generate Gov Report PDF
+                        </button>
                     </div>
                 `;
 
@@ -775,7 +908,7 @@
             const list = document.getElementById('complaintsList');
             
             try {
-                const response = await fetch(`http://127.0.0.1:8000/complaints/user/${userId}`);
+                const response = await fetch(`/complaints/user/${userId}`);
                 const complaints = await response.json();
 
                 list.innerHTML = '';
@@ -792,8 +925,8 @@
                 // Display complaints
                 complaints.forEach(complaint => {
                     const statusClass = `status-${complaint.status.toLowerCase().replace(' ', '-')}`;
-                    const statusIcon = complaint.status === 'Pending' ? 'fa-hourglass' : 
-                                      complaint.status === 'In Progress' ? 'fa-spinner' : 'fa-check';
+                    const statusIcon = complaint.status.toLowerCase() === 'pending' ? 'fa-hourglass' : 
+                                      complaint.status.toLowerCase() === 'investigating' ? 'fa-spinner' : 'fa-check';
                     
                     list.innerHTML += `
                         <div class="complaint-card">
@@ -820,9 +953,9 @@
 
         function updateComplaintStats(complaints) {
             const total = complaints.length;
-            const pending = complaints.filter(c => c.status === 'Pending').length;
-            const inProgress = complaints.filter(c => c.status === 'In Progress').length;
-            const resolved = complaints.filter(c => c.status === 'Resolved').length;
+            const pending = complaints.filter(c => c.status.toLowerCase() === 'pending').length;
+            const inProgress = complaints.filter(c => c.status.toLowerCase() === 'investigating').length;
+            const resolved = complaints.filter(c => c.status.toLowerCase() === 'resolved').length;
 
             document.getElementById('stat-total').textContent = total;
             document.getElementById('stat-pending').textContent = pending;

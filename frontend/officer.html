@@ -155,7 +155,7 @@
     <script>
         // Check Auth and role
         const role = localStorage.getItem('role');
-        if (role !== 'officer') { window.location.href = 'login.html'; }
+        if (role !== 'officer' && role !== 'admin') { window.location.href = 'login.html'; }
         document.getElementById('officerName').textContent = localStorage.getItem('username');
 
         function logout() {
@@ -165,7 +165,7 @@
 
         async function fetchAllComplaints() {
             try {
-                const res = await fetch('http://127.0.0.1:8000/complaints');
+                const res = await fetch('/complaints');
                 const complaints = await res.json();
                 
                 const tbody = document.getElementById('complaintsTableBody');
@@ -190,7 +190,7 @@
                             <td>CTX-${c.user_id}</td>
                             <td style="font-weight: 600;"><i class="fa-solid fa-map-pin badge-investigating"></i> ${c.location}</td>
                             <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.description}">${c.description || 'N/A'}</td>
-                            <td><a href="#" style="color: var(--accent-blue); text-decoration: none;"><i class="fa-solid fa-image"></i> View Imagery</a></td>
+                            <td><a href="/${c.image_path}" target="_blank" style="color: var(--accent-blue); text-decoration: none;"><i class="fa-solid fa-image"></i> View Imagery</a></td>
                             <td class="${badgeClass}" style="font-weight: 600; text-transform: capitalize;">${c.status}</td>
                             <td>
                                 <select class="status-select" onchange="updateStatus(${c.id}, this.value)">
@@ -215,7 +215,7 @@
 
         async function updateStatus(id, newStatus) {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/complaints/${id}/status`, {
+                const res = await fetch(`/complaints/${id}/status`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
