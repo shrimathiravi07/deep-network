@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Tower | Water-Guard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="auth.js?v=2"></script>
+    <style>
+        body { margin: 0; background: #030811; color: white; overflow: hidden; font-family: 'Inter', sans-serif; }
+        #canvas-container { position: absolute; top:0; left:0; width: 100vw; height: 100vh; z-index: 0; }
+        .tower-ui { position: absolute; z-index: 10; pointer-events: none; width: 100%; height: 100%; }
+        .glass-panel-tower {
+            pointer-events: auto;
+            position: absolute; right: 20px; top: 20px; width: 350px;
+            background: rgba(10, 18, 30, 0.85); backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; flex-direction: column; gap: 15px;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .glass-panel-tower::-webkit-scrollbar { width: 5px; }
+        .glass-panel-tower::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 5px; }
+        .header-tower { position: absolute; top: 20px; left: 20px; pointer-events: auto; }
+        .header-tower h1 { font-size: 2rem; margin: 0; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        .header-tower p { color: #88aadd; margin-top: 5px; font-weight: 300; }
+        .btn-tower { background: var(--accent-blue); border: none; padding: 10px 15px; color: white; border-radius: 6px; cursor: pointer; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; transition: all 0.3s; pointer-events: auto;}
+        .btn-tower:hover { box-shadow: 0 0 15px var(--accent-blue); transform: translateY(-2px); }
+        .btn-back { background: transparent; border: 1px solid rgba(255,255,255,0.2); margin-top: 10px;}
+        .btn-resolve { background: #10b981; } .btn-resolve:hover { box-shadow: 0 0 15px #10b981; }
+        
+        #proofInput { display: none; }
+        .upload-area { display: block; border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .upload-area:hover { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.1); }
+        
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .tag-pending { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); }
+        .tag-investigating { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.5); }
+        .tag-resolved { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); }
+        
+        .image-preview { width: 100%; height: 180px; background-size: cover; background-position: center; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="constellation"></canvas>
+    </div>
+    
+    <div class="tower-ui">
+        <div class="header-tower">
+            <h1><i class="fa-solid fa-radar"></i> Control Tower</h1>
+            <p>Live Digital Constellation of Water Protection</p>
+            <button class="btn-tower btn-back" onclick="window.location.href='officer.html'"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+        </div>
+        
+        <div class="glass-panel-tower" id="complaintPanel">
+            <!-- details injected here via JS -->
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('constellation');
+        const ctx = canvas.getContext('2d');
+        const panel = document.getElementById('complaintPanel');
+        let width, height;
+        let complaints = [];
+        let orbits = [];
+        let time = 0;
+        let selectedNode = null;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            calculateOrbits();
+        }
+        window.addEventListener('resize', resize);
+
+        async function fetchComplaints() {
+            try {
+                const res = await fetch('/complaints');
+                const data = await res.json();
+                complaints = data;
+                calculateOrbits();
+            } catch (err) { console.error(err); }
+        }
+
+        function calculateOrbits() {
+            const oldSelectedId = selectedNode ? selectedNode.c.id : null;
+            orbits = [];
+            const maxRadius = Math.min(width, height) / 2 - 50;
+            
+            complaints.forEach((c, index) => {
+                const orbitIndex = (index % 5) + 1;
+                const baseRadius = (maxRadius / 5) * orbitIndex;
+                const radius = baseRadius + (Math.random() * 20 - 10);
+                const speed = (0.001 * (6 - orbitIndex)) * (index % 2 === 0 ? 1 : -1);
+                
+                const offset = (c.id * 1.37) % (Math.PI * 2); 
+                
+                let node = {
+                    c: c,
+                    radius, speed, offset,
+                    x: 0, y: 0,
+                    pulse: Math.random() * Math.PI
+                };
+                orbits.push(node);
+                if(c.id === oldSelectedId) selectedNode = node;
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(3, 8, 17, 0.3)';
+            ctx.fillRect(0, 0, width, height);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
+            const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 30);
+            grad.addColorStop(0, 'rgba(0, 255, 255, 1)');
+            grad.addColorStop(1, 'rgba(0, 255, 255, 0)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            for(let i=1; i<=5; i++) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, (Math.min(width, height) / 2 - 50) / 5 * i, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+           
+            orbits.forEach(node => {
+                const angle = time * node.speed + node.offset;
+                node.x = centerX + Math.cos(angle) * node.radius;
+                node.y = centerY + Math.sin(angle) * node.radius;
+
+                let color = node.c.status === 'resolved' ? '#10b981' : (node.c.status === 'investigating' ? '#f59e0b' : '#ef4444');
+                let glowing = node.pulse + time * 0.05;
+                let size = selectedNode === node ? 10 : 5 + Math.sin(glowing) * 2;
+
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.beginPath();
+                for(let i=0; i<15; i++) {
+                    let a = angle - (node.speed * i * 4);
+                    let tx = centerX + Math.cos(a) * node.radius;
+                    let ty = centerY + Math.sin(a) * node.radius;
+                    if(i===0) ctx.moveTo(tx, ty);
+                    else ctx.lineTo(tx, ty);
+                }
+                ctx.globalAlpha = 0.3;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+                
+                
+                if(selectedNode === node) {
+                    ctx.fillStyle = 'white';
+                    ctx.font = '12px Inter';
+                    ctx.fillText(`ID: ${node.c.id} - ${node.c.status.toUpperCase()}`, node.x + 15, node.y - 15);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.lineTo(node.x, node.y);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            });
+
+            time++;
+            requestAnimationFrame(draw);
+        }
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            let clickedNode = null;
+            for(let node of orbits) {
+                const dist = Math.hypot(node.x - mouseX, node.y - mouseY);
+                if(dist < 20) {
+                    clickedNode = node;
+                    break;
+                }
+            }
+
+            if(clickedNode) {
+                selectedNode = clickedNode;
+                showPanel(selectedNode.c);
+            } else {
+                selectedNode = null;
+                panel.style.display = 'none';
+            }
+        });
+
+        function showPanel(c) {
+            let actionHtml = '';
+            if(c.status !== 'resolved') {
+                actionHtml = `
+                    <div style="margin-top: 15px;">
+                        <input type="file" id="proofInput" accept="image/*" onchange="previewProof(event)">
+                        <label for="proofInput" class="upload-area" id="uploadArea">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #88aadd; margin-bottom: 10px; display: block;"></i>
+                            <span id="uploadText" style="color: #ccc;">Click to upload restored water body image</span>
+                        </label>
+                        <button class="btn-tower btn-resolve" style="width: 100%; margin-top: 10px; display: none;" id="resolveBtn" onclick="resolveComplaint(${c.id})">
+                            <i class="fa-solid fa-check-circle"></i> Submit Proof & Resolve
+                        </button>
+                    </div>
+                `;
+            } else if(c.proof_image_path) {
+                 actionHtml = `
+                    <div style="margin-top: 15px;">
+                        <p style="font-size: 0.8rem; color: #10b981; margin-bottom: 5px;"><i class="fa-solid fa-check-double"></i> Restored Proof:</p>
+                        <div class="image-preview" style="background-image: url('/${c.proof_image_path}')"></div>
+                    </div>
+                `;
+            }
+
+            panel.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Report #${c.id}</h3>
+                    <span class="tag tag-${c.status}">${c.status}</span>
+                </div>
+                <div class="image-preview" style="background-image: url('/${c.image_path}')"></div>
+                <div style="font-size: 0.9rem;">
+                    <p><strong><i class="fa-solid fa-location-dot" style="color: #f59e0b;"></i> Location:</strong> <br>${c.location}</p>
+                    <p style="color: #aaa; margin-top:8px; line-height: 1.4;">${c.description}</p>
+                </div>
+                ${actionHtml}
+            `;
+            panel.style.display = 'flex';
+        }
+
+        let selectedFile = null;
+        window.previewProof = function(event) {
+            const file = event.target.files[0];
+            if(file) {
+                selectedFile = file;
+                const uploadArea = document.getElementById('uploadArea');
+                uploadArea.innerHTML = `<i class="fa-solid fa-image" style="color: #10b981; font-size: 1.5rem;"></i> <br><span style="color:#10b981;">${file.name}</span>`;
+                uploadArea.style.borderColor = '#10b981';
+                uploadArea.style.background = 'rgba(16, 185, 129, 0.1)';
+                document.getElementById('resolveBtn').style.display = 'block';
+            }
+        };
+
+        window.resolveComplaint = async function(id) {
+            if(!selectedFile) return;
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const btn = document.getElementById('resolveBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/complaints/${id}/resolve`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if(res.ok) {
+                    await fetchComplaints();
+                    const updated = complaints.find(c => c.id === id);
+                    if(updated) {
+                        selectedNode = orbits.find(o => o.c.id === id);
+                        showPanel(updated);
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                btn.innerHTML = 'Error! Try Again';
+                btn.disabled = false;
+            }
+        };
+
+        resize();
+        fetchComplaints();
+        draw();
+    </script>
+</body>
+</html>

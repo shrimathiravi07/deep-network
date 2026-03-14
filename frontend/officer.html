@@ -21,6 +21,9 @@
                 <a href="#" class="sidebar-link active">
                     <i class="fa-solid fa-inbox"></i> Active Reports
                 </a>
+                <a href="control-tower.html" class="sidebar-link" style="color: #00ffff; text-shadow: 0 0 5px rgba(0,255,255,0.5);">
+                    <i class="fa-solid fa-satellite-dish"></i> Control Tower
+                </a>
                 <a href="analytics.html" class="sidebar-link">
                     <i class="fa-solid fa-chart-line"></i> Analytics Dashboard
                 </a>
@@ -34,7 +37,12 @@
             </nav>
         </aside>
 
-        <main style="padding: 2.5rem; overflow-y: auto; background: #0B1218;">
+        <main style="padding: 2.5rem; overflow-y: auto; background: #0B1218; position: relative;">
+            <div id="aiPredictionToast" style="display: none; position: fixed; top: 30px; right: 30px; z-index: 1000; background: rgba(16, 185, 129, 0.95); backdrop-filter: blur(10px); color: white; border-radius: 8px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-width: 320px; border-left: 5px solid #065f46;">
+                <div style="font-weight: bold; margin-bottom: 5px; font-size: 1.1rem;"><i class="fa-solid fa-robot"></i> AI Assessment Complete</div>
+                <div id="aiPredictionData" style="font-size: 0.95rem; color: #f0fdf4;"></div>
+            </div>
+            
             <div class="section-header" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
                     <h2>Regional Encroachment Oversight</h2>
@@ -82,12 +90,24 @@
                             <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.description}</td>
                             <td><a href="/${c.image_path}" target="_blank" style="color: var(--accent-blue); text-decoration: none;"><i class="fa-solid fa-image"></i> View</a></td>
                             <td><span class="badge ${statusClass}">${c.status}</span></td>
-                            <td>
-                                <select class="status-select" onchange="updateStatus(${c.id}, this.value)" style="margin-top: 0; padding: 4px;">
-                                    <option value="pending" ${c.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                    <option value="investigating" ${c.status === 'investigating' ? 'selected' : ''}>Investigating</option>
-                                    <option value="resolved" ${c.status === 'resolved' ? 'selected' : ''}>Resolved</option>
-                                </select>
+                            <td style="min-width: 170px;">
+                                ${c.status === 'resolved' ? `
+                                    <div style="color: #10b981; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px;"><i class="fa-solid fa-check-circle"></i> Resolved</div>
+                                    ${c.proof_image_path ? `<a href="/${c.proof_image_path}" target="_blank" style="font-size: 0.8rem; color: #38bdf8; text-decoration: none;"><i class="fa-solid fa-image"></i> View Proof</a>` : ''}
+                                ` : `
+                                    <select class="status-select" onchange="updateStatus(${c.id}, this.value)" style="margin: 0 0 10px 0; padding: 6px; width: 100%; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                                        <option value="pending" ${c.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                        <option value="investigating" ${c.status === 'investigating' ? 'selected' : ''}>Investigating</option>
+                                    </select>
+                                    
+                                    <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.1);">
+                                        <label for="proof-${c.id}" style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px;"><i class="fa-solid fa-camera"></i> Upload Proof to Resolve</label>
+                                        <input type="file" id="proof-${c.id}" accept="image/*" style="font-size: 0.7rem; width: 100%; margin-bottom: 8px; color: #fff;" onchange="enableResolveBtn(${c.id})">
+                                        <button id="resolveBtn-${c.id}" class="btn" style="width: 100%; padding: 6px; font-size: 0.75rem; cursor: not-allowed; opacity: 0.5; background: #3b82f6; border: none; color: white; border-radius: 4px; transition: all 0.3s;" disabled onclick="resolveWithProof(${c.id})">
+                                            <i class="fa-solid fa-upload"></i> Complete Option
+                                        </button>
+                                    </div>
+                                `}
                             </td>
                         </tr>
                     `;
@@ -105,6 +125,72 @@
                 if (res.ok) fetchAllComplaints();
             } catch (err) { console.error(err); }
         }
+
+        window.enableResolveBtn = function(id) {
+            const fileInput = document.getElementById(`proof-${id}`);
+            const btn = document.getElementById(`resolveBtn-${id}`);
+            if (fileInput.files.length > 0) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.background = '#10b981';
+                btn.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.4)';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.style.background = '#3b82f6';
+                btn.style.boxShadow = 'none';
+            }
+        };
+
+        window.resolveWithProof = async function(id) {
+            const fileInput = document.getElementById(`proof-${id}`);
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            const btn = document.getElementById(`resolveBtn-${id}`);
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+            btn.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const predFormData = new FormData();
+                predFormData.append("file", file);
+                const predRes = await fetch('/predict', { method: 'POST', body: predFormData });
+                if (predRes.ok) {
+                    const predData = await predRes.json();
+                    const toast = document.getElementById('aiPredictionToast');
+                    const toastData = document.getElementById('aiPredictionData');
+                    if (toast && toastData) {
+                        toastData.innerHTML = `Model analyzed proof image successfully.<br><br><strong>Confirmed Water Pixels:</strong> ${predData.water_pixels.toLocaleString()}px`;
+                        toast.style.display = 'block';
+                        toast.style.animation = 'fadeIn 0.5s ease-out';
+                        setTimeout(() => { toast.style.display = 'none'; }, 6000);
+                    }
+                }
+            } catch(e) {
+                console.error("Model prediction failed:", e);
+            }
+
+            try {
+                const res = await fetch(`/complaints/${id}/resolve`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) fetchAllComplaints();
+                else {
+                    alert('Failed to resolve complaint.');
+                    btn.innerHTML = '<i class="fa-solid fa-upload"></i> Complete Option';
+                    btn.disabled = false;
+                }
+            } catch(err) {
+                console.error(err);
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error';
+            }
+        };
 
         window.onload = fetchAllComplaints;
     </script>

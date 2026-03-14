@@ -28,6 +28,7 @@ class ComplaintResponse(BaseModel):
     description: str
     location: str
     image_path: Optional[str] = None
+    proof_image_path: Optional[str] = None
     status: str
     user_id: int
     created_at: datetime

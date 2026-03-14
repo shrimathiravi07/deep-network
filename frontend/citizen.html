@@ -68,6 +68,7 @@
                             <i class="fa-solid fa-paper-plane"></i> Submit Official Complaint
                         </button>
                         <p id="submitStatus" style="margin-top: 10px; font-size: 0.9rem;"></p>
+                        <div id="aiPredictionResult" style="display: none; margin-top: 15px; padding: 15px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 8px; font-size: 0.9rem;"></div>
                     </div>
                     <div class="map-container" style="height: 100%;">
                         <div id="citizen-map" style="width: 100%; height: 100%;"></div>
@@ -215,9 +216,32 @@
             formData.append('file', file);
 
             try {
-                statusEl.innerText = "Processing report...";
+                statusEl.innerText = "Processing report & Checking AI model...";
                 statusEl.style.color = "var(--accent-blue)";
                 
+                try {
+                    const predFormData = new FormData();
+                    predFormData.append("file", file);
+                    const predRes = await fetch('/predict', { method: 'POST', body: predFormData });
+                    if (predRes.ok) {
+                        const predData = await predRes.json();
+                        const resultDiv = document.getElementById('aiPredictionResult');
+                        if (resultDiv) {
+                            resultDiv.style.display = 'block';
+                            resultDiv.innerHTML = `
+                                <div style="color: #10b981; font-weight: 600; margin-bottom: 5px;">
+                                    <i class="fa-solid fa-robot"></i> AI Model Working Correctly!
+                                </div>
+                                <div style="color: #e2e8f0;">
+                                    Prediction complete. <strong>${predData.water_pixels.toLocaleString()}</strong> water pixels detected.
+                                </div>
+                            `;
+                        }
+                    }
+                } catch(e) {
+                    console.error("Model prediction failed:", e);
+                }
+
                 const response = await fetch('/complaints', { method: 'POST', body: formData });
                 if (response.ok) {
                     statusEl.innerText = "Complaint submitted successfully!";

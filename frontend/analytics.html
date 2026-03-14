@@ -83,51 +83,74 @@
         }
 
         async function fetchAnalytics() {
-            const res = await fetch('/analytics');
-            const data = await res.json();
+            try {
+                const res = await fetch('/analytics');
+                const data = await res.json();
+                
+                document.getElementById('aiAccuracyDisp').innerText = data.model_performance.accuracy;
 
-            document.getElementById('aiAccuracyDisp').innerText = data.model_performance.accuracy;
-            document.getElementById('highPriorityCount').innerText = data.priority_overview.high;
-            document.getElementById('medPriorityCount').innerText = data.priority_overview.medium;
-            document.getElementById('totalDetections').innerText = data.total_impact;
+                const animateValue = (id, end, suffix='') => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    let start = 0;
+                    const duration = 1500;
+                    const step = (end / (duration / 16));
+                    
+                    const timer = setInterval(() => {
+                        start += step;
+                        if (start >= end) {
+                            el.innerText = Math.round(end) + suffix;
+                            clearInterval(timer);
+                        } else {
+                            el.innerText = Math.round(start) + suffix;
+                        }
+                    }, 16);
+                };
 
-            const ctx1 = document.getElementById('resolutionChart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'pie',
-                data: {
-                    labels: ['Pending', 'Investigating', 'Resolved'],
-                    datasets: [{
-                        data: [
-                            data.status_distribution.pending, 
-                            data.status_distribution.investigating, 
-                            data.status_distribution.resolved
-                        ],
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { plugins: { legend: { labels: { color: '#94a3b8' }, position: 'bottom' } } }
-            });
+                animateValue('highPriorityCount', data.priority_overview.high);
+                animateValue('medPriorityCount', data.priority_overview.medium);
+                animateValue('totalDetections', data.total_impact);
 
-            const ctx2 = document.getElementById('typeChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: ['Illegal Construction', 'Waste Dumping', 'Fencing'],
-                    datasets: [{
-                        label: 'Priority Weight',
-                        data: [data.priority_overview.high, data.priority_overview.medium, data.priority_overview.low],
-                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6']
-                    }]
-                },
-                options: { 
-                    scales: { 
-                        y: { beginAtZero: true, ticks: { color: '#94a3b8' } },
-                        x: { ticks: { color: '#94a3b8' } }
+                const ctx1 = document.getElementById('resolutionChart').getContext('2d');
+                new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Pending', 'Investigating', 'Resolved'],
+                        datasets: [{
+                            data: [
+                                data.status_distribution.pending, 
+                                data.status_distribution.investigating, 
+                                data.status_distribution.resolved
+                            ],
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'],
+                            borderWidth: 0
+                        }]
                     },
-                    plugins: { legend: { display: false } }
-                }
-            });
+                    options: { plugins: { legend: { labels: { color: '#94a3b8' }, position: 'bottom' } } }
+                });
+
+                const ctx2 = document.getElementById('typeChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Illegal Construction', 'Waste Dumping', 'Fencing'],
+                        datasets: [{
+                            label: 'Priority Weight',
+                            data: [data.priority_overview.high, data.priority_overview.medium, data.priority_overview.low],
+                            backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6']
+                        }]
+                    },
+                    options: { 
+                        scales: { 
+                            y: { beginAtZero: true, ticks: { color: '#94a3b8' } },
+                            x: { ticks: { color: '#94a3b8' } }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            } catch (err) {
+                console.error("Failed to load analytics data:", err);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', fetchAnalytics);
